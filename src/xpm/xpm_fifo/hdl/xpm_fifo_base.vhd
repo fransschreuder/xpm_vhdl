@@ -24,7 +24,7 @@ generic(
     
     READ_MODE               : integer := 0;
     FIFO_READ_LATENCY       : integer := 1;
-    READ_DATA_WIDTH         : integer := WRITE_DATA_WIDTH;
+    READ_DATA_WIDTH         : integer := 32;
     RD_DATA_COUNT_WIDTH     : integer := 12;
     PROG_EMPTY_THRESH       : integer := 10;
     DOUT_RESET_VALUE        : string := "0";

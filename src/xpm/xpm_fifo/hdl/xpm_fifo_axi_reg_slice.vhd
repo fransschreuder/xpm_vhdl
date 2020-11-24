@@ -2,11 +2,12 @@ library ieee;
 use ieee.std_logic_1164.all;
 library std;
 use std.env.all;
+use ieee.std_logic_misc.all;
 
 entity xpm_fifo_axi_reg_slice is
   generic (
     C_DATA_WIDTH : integer := 32;
-    C_REG_CONFIG : std_logic_vector(C_DATA_WIDTH-1 downto 0) := (others => '0')
+    C_REG_CONFIG : integer := 0
   );
   port(
    -- System Signals
@@ -53,14 +54,14 @@ begin
     end if;
   end process;
 
-   sync_reset     <= (or sckt_wr_rst_cc(RST_BUSY_LEN-5 downto 0)) or arst_sync_wr(1);
-   extnd_reset    <= (or sckt_wr_rst_cc) or arst_sync_wr(1);
+   sync_reset     <= (or_reduce( sckt_wr_rst_cc(RST_BUSY_LEN-5 downto 0))) or arst_sync_wr(1);
+   extnd_reset    <= (or_reduce( sckt_wr_rst_cc)) or arst_sync_wr(1);
   --------------------------------------------------------------------
   --
   -- Both FWD and REV mode
   --
   --------------------------------------------------------------------
-    g_zero: if (C_REG_CONFIG = x"00000000") generate
+    g_zero: if (C_REG_CONFIG = 0) generate
       signal state: std_logic_vector(1 downto 0);
       constant ZERO : std_logic_vector(1 downto 0) := "10";
       constant ONE  : std_logic_vector(1 downto 0) := "11";
@@ -186,7 +187,7 @@ begin
   -- Operates same as 1-deep FIFO
   --
   --------------------------------------------------------------------
-    g_one: if (C_REG_CONFIG = x"00000001") generate
+    g_one: if (C_REG_CONFIG = 1) generate
       signal storage_data1 : std_logic_vector(C_DATA_WIDTH-1 downto 0) := (others => '0');
       signal s_ready_i: std_logic; --local signal of output
       signal m_valid_i: std_logic; --local signal of output
@@ -228,7 +229,7 @@ begin
       M_PAYLOAD_DATA <= storage_data1;
     end generate g_one;
     
-    g_default: if (C_REG_CONFIG /= x"00000000" and C_REG_CONFIG /= x"00000001") generate
+    g_default: if (C_REG_CONFIG /= 0 and C_REG_CONFIG /= 1) generate
       -- Passthrough
        M_PAYLOAD_DATA <= S_PAYLOAD_DATA;
        M_VALID        <= S_VALID;

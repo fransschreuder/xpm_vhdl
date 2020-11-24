@@ -262,54 +262,63 @@ architecture rtl of xpm_fifo_axis is
   signal axis_rd_eop : std_logic;
   signal axis_pkt_cnt : integer;
   
+  signal m_axis_tvalid_s: std_logic;
+  signal m_axis_tlast_s: std_logic;
+  signal s_axis_tready_s: std_logic;
+  signal almost_full_axis_s: std_logic;
+  
 begin
+  m_axis_tvalid <= m_axis_tvalid_s;
+  m_axis_tlast <= m_axis_tlast_s;
+  s_axis_tready <= s_axis_tready_s;
+  almost_full_axis <= almost_full_axis_s;
 
   config_drc_axis: process
     variable drc_err_flag_axis : integer := 0;
   begin
     
     if (AXIS_FINAL_DATA_WIDTH > 4096) then
-      report("(XPM_FIFO_AXIS 20-2) Total width (sum of TDATA, TID, TDEST, TKEEP, TSTRB, TUSER and TLAST) of AXI Stream FIFO ("&to_string(AXIS_FINAL_DATA_WIDTH)&") exceeds the maximum supported width (%0d). Please reduce the width of TDATA or TID or TDEST or TUSER")severity error;
+      report("(XPM_FIFO_AXIS 20-2) Total width (sum of TDATA, TID, TDEST, TKEEP, TSTRB, TUSER and TLAST) of AXI Stream FIFO ("&integer'image(AXIS_FINAL_DATA_WIDTH)&") exceeds the maximum supported width (%0d). Please reduce the width of TDATA or TID or TDEST or TUSER")severity error;
       drc_err_flag_axis := 1;
     end if;
 
     if ((TDATA_WIDTH mod 8 /= 0) or TDATA_WIDTH < 8 or TDATA_WIDTH > 2048) then
-      report("(XPM_FIFO_AXIS 20-) TDATA_WIDTH ("&to_string(TDATA_WIDTH)&") value is outside of legal range. TDATA_WIDTH value must be between 8 and 2048, and it must be multiples of 8.")severity error;
+      report("(XPM_FIFO_AXIS 20-) TDATA_WIDTH ("&integer'image(TDATA_WIDTH)&") value is outside of legal range. TDATA_WIDTH value must be between 8 and 2048, and it must be multiples of 8.")severity error;
       drc_err_flag_axis := 1;
     end if;
 
     if (TID_WIDTH < 1 or TID_WIDTH > 32) then
-      report("(XPM_FIFO_AXIS 20-4) TID_WIDTH ("&to_string(TID_WIDTH)&") value is outside of legal range. TID_WIDTH value must be between 1 and 32, and it must be multiples of 8.")severity error;
+      report("(XPM_FIFO_AXIS 20-4) TID_WIDTH ("&integer'image(TID_WIDTH)&") value is outside of legal range. TID_WIDTH value must be between 1 and 32, and it must be multiples of 8.")severity error;
       drc_err_flag_axis := 1;
     end if;
 
     if (TDEST_WIDTH < 1 or TDEST_WIDTH > 32) then
-      report("(XPM_FIFO_AXIS 20-5) TDEST_WIDTH ("&to_string(TDEST_WIDTH)&") value is outside of legal range. TDEST_WIDTH value must be between 1 and 32, and it must be multiples of 8.")severity error;
+      report("(XPM_FIFO_AXIS 20-5) TDEST_WIDTH ("&integer'image(TDEST_WIDTH)&") value is outside of legal range. TDEST_WIDTH value must be between 1 and 32, and it must be multiples of 8.")severity error;
       drc_err_flag_axis := 1;
     end if;
 
     if (TUSER_WIDTH < 1 or TUSER_WIDTH > TUSER_MAX_WIDTH) then
-      report("(XPM_FIFO_AXIS 20-6) TUSER_WIDTH ("&to_string(TUSER_WIDTH)&") value is outside of legal range. TUSER_WIDTH value must be between 1 and "&to_string(TUSER_MAX_WIDTH)&" and it must be multiples of 8.")severity error;
+      report("(XPM_FIFO_AXIS 20-6) TUSER_WIDTH ("&integer'image(TUSER_WIDTH)&") value is outside of legal range. TUSER_WIDTH value must be between 1 and "&integer'image(TUSER_MAX_WIDTH)&" and it must be multiples of 8.")severity error;
       drc_err_flag_axis := 1;
     end if;
 
     if (RELATED_CLOCKS = 1 and P_PKT_MODE /= 0) then
-      report("(XPM_FIFO_AXIS 20-7) RELATED_CLOCKS ("&to_string(RELATED_CLOCKS)&") value is outside of legal range. RELATED_CLOCKS value must be 0 when PACKET_FIFO is set to XPM_FIFO_AXIS.")severity error;
+      report("(XPM_FIFO_AXIS 20-7) RELATED_CLOCKS ("&integer'image(RELATED_CLOCKS)&") value is outside of legal range. RELATED_CLOCKS value must be 0 when PACKET_FIFO is set to XPM_FIFO_AXIS.")severity error;
       drc_err_flag_axis := 1;
     end if;
 
     if (EN_ADV_FEATURE_AXIS(13) = '1' and (P_PKT_MODE /= 1 or P_COMMON_CLOCK /= 0)) then
-      report("(XPM_FIFO_AXIS 20-8) USE_ADV_FEATURES(13) ("&to_string(EN_ADV_FEATURE_AXIS(13))&") value is outside of legal range. USE_ADV_FEATURES(13) can be set to 1 only for packet mode in asynchronous AXI-Stream FIFO.") severity error;
+      report("(XPM_FIFO_AXIS 20-8) USE_ADV_FEATURES(13) ("&std_logic'image(EN_ADV_FEATURE_AXIS(13))&") value is outside of legal range. USE_ADV_FEATURES(13) can be set to 1 only for packet mode in asynchronous AXI-Stream FIFO.") severity error;
       drc_err_flag_axis := 1;
     end if;
  
     -- Infos
     if (P_PKT_MODE = 1 and EN_ADV_FEATURE_AXIS(3) /= '1') then
-      report("(XPM_FIFO_AXIS 21-1) Almost full flag option is not enabled (USE_ADV_FEATURES(3) = "&to_string(EN_ADV_FEATURE_AXIS(3))&") but Packet FIFO mode requires almost_full to be enabled. XPM_FIFO_AXIS enables the Almost full flag automatically. You may ignore almost_full port if not required") severity note;
+      report("(XPM_FIFO_AXIS 21-1) Almost full flag option is not enabled (USE_ADV_FEATURES(3) = "&std_logic'image(EN_ADV_FEATURE_AXIS(3))&") but Packet FIFO mode requires almost_full to be enabled. XPM_FIFO_AXIS enables the Almost full flag automatically. You may ignore almost_full port if not required") severity note;
     end if;
 
     if (P_PKT_MODE = 1 and EN_ADV_FEATURE_AXIS(11) /= '1') then
-      report("(XPM_FIFO_AXIS 21-1) Almost empty flag option is not enabled (USE_ADV_FEATURES(11) = "&to_string(EN_ADV_FEATURE_AXIS(11))&") but Packet FIFO mode requires almost_empty to be enabled. XPM_FIFO_AXIS enables the Almost empty flag automatically. You may ignore almost_empty port if not required") severity note;
+      report("(XPM_FIFO_AXIS 21-1) Almost empty flag option is not enabled (USE_ADV_FEATURES(11) = "&std_logic'image(EN_ADV_FEATURE_AXIS(11))&") but Packet FIFO mode requires almost_empty to be enabled. XPM_FIFO_AXIS enables the Almost empty flag automatically. You may ignore almost_empty port if not required") severity note;
     end if;
  
     if (drc_err_flag_axis = 1) then
@@ -328,7 +337,7 @@ begin
      axis_din <= padding & s_axis_tlast & s_axis_tuser & s_axis_tdest & s_axis_tid & s_axis_tkeep & s_axis_tstrb & s_axis_tdata;
   end generate axis_ecc;
 
-    m_axis_tlast <= axis_dout(AXIS_DATA_WIDTH-1);
+    m_axis_tlast_s <= axis_dout(AXIS_DATA_WIDTH-1);
     m_axis_tuser <= axis_dout(TUSER_OFFSET-1 downto TDEST_OFFSET);
     m_axis_tdest <= axis_dout(TDEST_OFFSET-1 downto TID_OFFSET);
     m_axis_tid   <= axis_dout(TID_OFFSET-1 downto TKEEP_OFFSET);
@@ -375,7 +384,7 @@ begin
      rd_clk <= m_aclk;
    end generate;
    
-   rd_en <= m_axis_tvalid and m_axis_tready;
+   rd_en <= m_axis_tvalid_s and m_axis_tready;
    
       xpm_fifo_base_inst: entity work.xpm_fifo_base 
       generic map(
@@ -413,7 +422,7 @@ begin
         wr_data_count    => wr_data_count_axis,
         overflow         => open,
         wr_rst_busy      => open,
-        almost_full      => almost_full_axis,
+        almost_full      => almost_full_axis_s,
         wr_ack           => open,
         rd_clk           => rd_clk,
         rd_en            => rd_en,
@@ -434,13 +443,13 @@ begin
 
 
   gaxis_npkt_fifo: if (P_PKT_MODE = 0) generate
-     m_axis_tvalid <= data_valid_axis;
+     m_axis_tvalid_s <= data_valid_axis;
   end generate gaxis_npkt_fifo;
 
   gaxis_pkt_fifo_cc: if (P_PKT_MODE = 1 and P_COMMON_CLOCK = 1) generate
-     axis_wr_eop <= s_axis_tvalid and s_axis_tready and s_axis_tlast;
-     axis_rd_eop <= m_axis_tvalid and m_axis_tready and m_axis_tlast and axis_pkt_read;
-     m_axis_tvalid <= data_valid_axis and axis_pkt_read;
+     axis_wr_eop <= s_axis_tvalid and s_axis_tready_s and s_axis_tlast;
+     axis_rd_eop <= m_axis_tvalid_s and m_axis_tready and m_axis_tlast_s and axis_pkt_read;
+     m_axis_tvalid_s <= data_valid_axis and axis_pkt_read;
 
     process(rst_axis, s_aclk)
     begin
@@ -449,7 +458,7 @@ begin
       elsif rising_edge(s_aclk) then
         if (axis_rd_eop = '1' and (axis_pkt_cnt = 1) and axis_wr_eop_d1 = '0') then
           axis_pkt_read    <= '0';
-        elsif ((axis_pkt_cnt > 0) or (almost_full_axis = '1' and data_valid_axis = '1')) then
+        elsif ((axis_pkt_cnt > 0) or (almost_full_axis_s = '1' and data_valid_axis = '1')) then
           axis_pkt_read    <= '1';
         end if;
       end if;
@@ -494,9 +503,9 @@ begin
     signal axis_af_rd  : std_logic;
   begin
 
-     axis_wr_eop <= s_axis_tvalid and s_axis_tready and s_axis_tlast;
-     axis_rd_eop <= m_axis_tvalid and m_axis_tready and m_axis_tlast and axis_pkt_read;
-     m_axis_tvalid <= data_valid_axis and axis_pkt_read;
+     axis_wr_eop <= s_axis_tvalid and s_axis_tready_s and s_axis_tlast;
+     axis_rd_eop <= m_axis_tvalid_s and m_axis_tready and m_axis_tlast_s and axis_pkt_read;
+     m_axis_tvalid_s <= data_valid_axis and axis_pkt_read;
 
     process(rd_rst_busy_axis, m_aclk)
     begin
@@ -516,7 +525,7 @@ begin
       if (rst_axis = '1') then
         axis_wpkt_cnt    <= (others => '0');
       elsif rising_edge(s_aclk) then
-        if (axis_wr_eop) then
+        if (axis_wr_eop = '1') then
           axis_wpkt_cnt    <= axis_wpkt_cnt + 1;
         end if;
       end if;
@@ -559,7 +568,7 @@ begin
     )
     port map(
         src_clk            => s_aclk,
-        src_in             => almost_full_axis,
+        src_in             => almost_full_axis_s,
         dest_clk           => m_aclk,
         dest_out           => axis_af_rd
     );

@@ -107,6 +107,7 @@ architecture rtl of xpm_cdc_low_latency_handshake is
   signal src_count_eq : std_logic;
   signal src_ready_nxt : std_logic;
   signal src_ready_ext_ff : std_logic;
+  signal src_ready_s : std_logic;
 
 begin
 
@@ -153,7 +154,7 @@ begin
     wait;
   end process config_drc_single;
 
-  src_valid_nxt <= src_valid and src_ready;
+  src_valid_nxt <= src_valid and src_ready_s;
   with src_valid_nxt select src_count_nxt <= (not src_count_ff) when '1', src_count_ff when others;
   
   dest_ready_nxt <= dest_valid_ext_ff and dest_ready_in;
@@ -182,7 +183,8 @@ begin
   end process;
   
   src_ready_nxt  <= src_count_eq and not src_valid_nxt;
-  src_ready      <= src_ready_ext_ff;
+  src_ready_s      <= src_ready_ext_ff;
+  src_ready <= src_ready_s;
 
   dest_out <= dest_hsdata_ff;
 

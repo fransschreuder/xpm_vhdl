@@ -5,6 +5,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std_unsigned.all;
 use ieee.numeric_std.all;
+use ieee.std_logic_misc.all;
 library std;
 use std.env.all;
 entity xpm_fifo_gen_dgen is
@@ -108,7 +109,7 @@ g_doutw_gt_dinw: if (C_DIN_WIDTH < C_DOUT_WIDTH) generate
          end if;
       end process;
 
-  pr_w_en   <= prc_wr_en  and  (not full)  and  ( and wr_cntr);
+  pr_w_en   <= prc_wr_en  and  (not full)  and  ( and_reduce( wr_cntr));
   process(wr_cntr)
   begin
       if(wr_cntr = 0) then

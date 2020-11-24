@@ -3,6 +3,7 @@ use ieee.std_logic_1164.all;
 library std;
 use std.env.all;
 use ieee.math_real.all;
+use ieee.std_logic_misc.all;
 
 entity xpm_memory_base is
   generic (
@@ -27,22 +28,22 @@ entity xpm_memory_base is
     WRITE_PROTECT           : integer := 1;
   -- Port A module s
     WRITE_DATA_WIDTH_A      : integer   := 32;
-    READ_DATA_WIDTH_A       : integer   := WRITE_DATA_WIDTH_A;
-    BYTE_WRITE_WIDTH_A      : integer   := WRITE_DATA_WIDTH_A;
-    ADDR_WIDTH_A            : integer   := integer(ceil(log2(real(MEMORY_SIZE/WRITE_DATA_WIDTH_A))));
+    READ_DATA_WIDTH_A       : integer   := 32;
+    BYTE_WRITE_WIDTH_A      : integer   := 32;
+    ADDR_WIDTH_A            : integer   := 6;
     READ_RESET_VALUE_A      : string    := "0";
     READ_LATENCY_A          : integer   := 2;
     WRITE_MODE_A            : integer   := 2;
     RST_MODE_A              : string    := "SYNC";
 
   -- Port B module s
-    WRITE_DATA_WIDTH_B      : integer  := WRITE_DATA_WIDTH_A;
-    READ_DATA_WIDTH_B       : integer  := WRITE_DATA_WIDTH_B;
-    BYTE_WRITE_WIDTH_B      : integer  := WRITE_DATA_WIDTH_B;
-    ADDR_WIDTH_B            : integer  := integer(ceil(log2(real(MEMORY_SIZE/WRITE_DATA_WIDTH_B))));
+    WRITE_DATA_WIDTH_B      : integer  := 32;
+    READ_DATA_WIDTH_B       : integer  := 32;
+    BYTE_WRITE_WIDTH_B      : integer  := 32;
+    ADDR_WIDTH_B            : integer  := 6;
     READ_RESET_VALUE_B      : string    := "0";
-    READ_LATENCY_B          : integer  := READ_LATENCY_A;
-    WRITE_MODE_B            : integer  := WRITE_MODE_A;
+    READ_LATENCY_B          : integer  := 2;
+    WRITE_MODE_B            : integer  := 2;
     RST_MODE_B              : string   := "SYNC"
 );
 port (
@@ -87,8 +88,8 @@ architecture rtl of xpm_memory_base is
 begin
 
     rst_n <= not rsta;
-    wea_or <= or wea;
-    web_or <= or web;
+    wea_or <= or_reduce(wea);
+    web_or <= or_reduce(web);
 
 generic_dpram0: entity work.generic_dpram_dualclock
   generic map(
