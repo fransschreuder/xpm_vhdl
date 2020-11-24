@@ -78,10 +78,8 @@ end generic_dpram_dualclock;
 architecture syn of generic_dpram_dualclock is
 
   constant c_num_bytes : integer := (g_data_width+7)/8;
-
-
   type t_ram_type is array(0 to g_size-1) of std_logic_vector(g_data_width-1 downto 0);
-
+  
   impure function f_file_to_ramtype return t_ram_type is
     variable tmp    : t_ram_type;
     variable n, pos : integer;
@@ -120,8 +118,39 @@ architecture syn of generic_dpram_dualclock is
     return true;
   end f_is_synthesis;
 
-  shared variable ram : t_ram_type := f_file_to_ramtype;
+  type T is protected
+    impure function Get(Index: std_logic_vector(f_log2_size(g_size)-1 downto 0)) return std_logic_vector;
+    procedure Set (Index: std_logic_vector(f_log2_size(g_size)-1 downto 0); Data: std_logic_vector(g_data_width-1 downto 0));
+    procedure SetBE (Index: std_logic_vector(f_log2_size(g_size)-1 downto 0); Data: std_logic_vector(g_data_width-1 downto 0); BE : std_logic_vector((g_data_width+7)/8-1 downto 0));
+  end protected T;
 
+  type T is protected body
+    variable V : t_ram_type := f_file_to_ramtype;
+    
+    impure function Get(Index: std_logic_vector(f_log2_size(g_size)-1 downto 0)) return std_logic_vector is
+    begin
+        return V(to_integer(unsigned(Index)));
+    end function;
+    
+    procedure Set (Index: std_logic_vector(f_log2_size(g_size)-1 downto 0); Data: std_logic_vector(g_data_width-1 downto 0)) is
+    begin
+        V(to_integer(unsigned(Index))) := Data;
+    end procedure;
+    
+    procedure SetBE (Index: std_logic_vector(f_log2_size(g_size)-1 downto 0); Data: std_logic_vector(g_data_width-1 downto 0); BE : std_logic_vector((g_data_width+7)/8-1 downto 0)) is
+    begin
+        for i in 0 to c_num_bytes-1 loop
+          if BE(i) = '1' then
+            V(to_integer(unsigned(Index)))((i+1)*8-1 downto i*8) := Data((i+1)*8-1 downto i*8);
+          end if;
+        end loop;
+    end procedure;
+    
+  end protected body T;
+  
+  shared variable ram: T;
+  
+  
   signal s_we_a     : std_logic_vector(c_num_bytes-1 downto 0);
   signal s_we_b     : std_logic_vector(c_num_bytes-1 downto 0);
 
@@ -142,16 +171,8 @@ begin
     process (clka_i)
     begin
       if rising_edge(clka_i) then
-        if f_is_synthesis then
-          qa_o <= ram(to_integer(unsigned(aa_i)));
-        else
-          qa_o <= ram(to_integer(unsigned(aa_i)) mod g_size);
-        end if;
-        for i in 0 to c_num_bytes-1 loop
-          if s_we_a(i) = '1' then
-            ram(to_integer(unsigned(aa_i)))((i+1)*8-1 downto i*8) := da_i((i+1)*8-1 downto i*8);
-          end if;
-        end loop;
+        qa_o <= ram.Get(aa_i);
+        ram.SetBE(aa_i, da_i, s_we_a);
       end if;
     end process;
 
@@ -159,22 +180,10 @@ begin
     process (clkb_i)
     begin
       if rising_edge(clkb_i) then
-        if f_is_synthesis then
-          qb_o <= ram(to_integer(unsigned(ab_i)));
-        else
-          qb_o <= ram(to_integer(unsigned(ab_i)) mod g_size);
-        end if;
-        for i in 0 to c_num_bytes-1 loop
-          if s_we_b(i) = '1' then
-            ram(to_integer(unsigned(ab_i)))((i+1)*8-1 downto i*8)
-              := db_i((i+1)*8-1 downto i*8);
-          end if;
-        end loop;
+        qb_o <= ram.Get(ab_i);
+        ram.SetBE(ab_i, db_i, s_we_b);
       end if;
     end process;
-
-
-
 
   end generate gen_with_byte_enable_readfirst;
 
@@ -186,9 +195,9 @@ begin
     process(clka_i)
     begin
       if rising_edge(clka_i) then
-        qa_o <= ram(to_integer(unsigned(aa_i)));
+        qa_o <= ram.Get(aa_i);
         if(wea_i = '1') then
-          ram(to_integer(unsigned(aa_i))) := da_i;
+          ram.Set(aa_i, da_i);
         end if;
       end if;
     end process;
@@ -197,9 +206,9 @@ begin
     process(clkb_i)
     begin
       if rising_edge(clkb_i) then
-        qb_o <= ram(to_integer(unsigned(ab_i)));
+        qb_o <= ram.Get(ab_i);
         if(web_i = '1') then
-          ram(to_integer(unsigned(ab_i))) := db_i;
+          ram.Set(ab_i, db_i);
         end if;
       end if;
     end process;
@@ -213,10 +222,10 @@ begin
     begin
       if rising_edge(clka_i) then
         if(wea_i = '1') then
-          ram(to_integer(unsigned(aa_i))) := da_i;
+          ram.Set(aa_i, da_i);
           qa_o                            <= da_i;
         else
-          qa_o <= ram(to_integer(unsigned(aa_i)));
+          qa_o <= ram.Get(aa_i);
         end if;
       end if;
     end process;
@@ -226,10 +235,10 @@ begin
     begin
       if rising_edge(clkb_i) then
         if(web_i = '1') then
-          ram(to_integer(unsigned(ab_i))) := db_i;
+          ram.Set(ab_i, db_i);
           qb_o                            <= db_i;
         else
-          qb_o <= ram(to_integer(unsigned(ab_i)));
+          qb_o <= ram.Get(ab_i);
         end if;
       end if;
     end process;
@@ -242,9 +251,9 @@ begin
     begin
       if rising_edge(clka_i) then
         if(wea_i = '1') then
-          ram(to_integer(unsigned(aa_i))) := da_i;
+          ram.Set(aa_i, da_i);
         else
-          qa_o <= ram(to_integer(unsigned(aa_i)));
+          qa_o <= ram.Get(aa_i);
         end if;
       end if;
     end process;
@@ -254,9 +263,9 @@ begin
     begin
       if rising_edge(clkb_i) then
         if(web_i = '1') then
-          ram(to_integer(unsigned(ab_i))) := db_i;
+          ram.Set(ab_i, db_i);
         else
-          qb_o <= ram(to_integer(unsigned(ab_i)));
+          qb_o <= ram.Get(ab_i);
         end if;
       end if;
     end process;
