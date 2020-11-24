@@ -66,7 +66,7 @@ architecture tb of xpm_fifo_ex is
   end function;
 
 --reg-wire Decalrations
- signal    sleep     : std_logic;
+ signal    sleep     : std_logic := '0';
  signal    prog_full : std_logic;
  signal    wr_data_count : std_logic_vector(WR_DATA_COUNT_WIDTH-1 downto 0);
  signal    overflow: std_logic;
@@ -75,8 +75,8 @@ architecture tb of xpm_fifo_ex is
  signal    rd_data_count : std_logic_vector(RD_DATA_COUNT_WIDTH-1 downto 0);
  signal    underflow: std_logic;
  signal    rd_rst_busy: std_logic;
- signal    injectsbiterr: std_logic;
- signal    injectdbiterr: std_logic;
+ signal    injectsbiterr: std_logic := '0';
+ signal    injectdbiterr: std_logic := '0';
  signal    sbiterr: std_logic;
  signal    dbiterr: std_logic;
 -- FIFO interface signal declarations

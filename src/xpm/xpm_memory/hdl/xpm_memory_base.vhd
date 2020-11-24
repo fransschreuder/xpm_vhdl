@@ -81,9 +81,9 @@ port (
 end xpm_memory_base;
 
 architecture rtl of xpm_memory_base is
-    signal rst_n : std_logic;
-    signal wea_or : std_logic;
-    signal web_or : std_logic;
+    signal rst_n : std_logic := '0';
+    signal wea_or : std_logic := '0';
+    signal web_or : std_logic := '0';
 begin
 
     rst_n <= not rsta;

@@ -130,7 +130,7 @@ architecture rtl of xpm_fifo_base is
   constant both_stages_valid   : std_logic_vector(1 downto 0) := "11";
 
   signal curr_fwft_state : std_logic_vector(1 downto 0) := invalid;
-  signal next_fwft_state : std_logic_vector(1 downto 0);-- = invalid;
+  signal next_fwft_state : std_logic_vector(1 downto 0) := invalid;
 
 
 
@@ -226,58 +226,58 @@ architecture rtl of xpm_fifo_base is
   constant EN_AE           : std_logic := EN_ADV_FEATURE(11); --EN_ADV_FLAGS_RD(3) ? 1 : 0;
   constant EN_DVLD         : std_logic := EN_ADV_FEATURE(12); --EN_ADV_FLAGS_RD(4) ? 1 : 0;
 
-  signal  wrst_busy : std_logic;
-  signal     wr_pntr               : std_logic_vector(WR_PNTR_WIDTH-1 downto 0);
-  signal     wr_pntr_ext           : std_logic_vector(WR_PNTR_WIDTH downto 0);
-  signal     wr_pntr_rd_cdc        : std_logic_vector(WR_PNTR_WIDTH-1 downto 0);
-  signal     wr_pntr_rd_cdc_dc     : std_logic_vector(WR_PNTR_WIDTH downto 0);
-  signal     wr_pntr_rd            : std_logic_vector(WR_PNTR_WIDTH-1 downto 0);
-  signal     wr_pntr_rd_dc         : std_logic_vector(WR_PNTR_WIDTH downto 0);
-  signal     rd_pntr_wr_adj        : std_logic_vector(WR_PNTR_WIDTH-1 downto 0);
-  signal     rd_pntr_wr_adj_dc     : std_logic_vector(WR_PNTR_WIDTH downto 0);
-  signal     wr_pntr_plus1         : std_logic_vector(WR_PNTR_WIDTH-1 downto 0);
-  signal     wr_pntr_plus2         : std_logic_vector(WR_PNTR_WIDTH-1 downto 0);
-  signal     wr_pntr_plus3         : std_logic_vector(WR_PNTR_WIDTH-1 downto 0);
-  signal     wr_pntr_plus1_pf      : std_logic_vector(WR_PNTR_WIDTH downto 0);
-  signal     rd_pntr_wr_adj_inv_pf : std_logic_vector(WR_PNTR_WIDTH downto 0);
+  signal  wrst_busy : std_logic := '0';
+  signal     wr_pntr               : std_logic_vector(WR_PNTR_WIDTH-1 downto 0) := (others => '0');
+  signal     wr_pntr_ext           : std_logic_vector(WR_PNTR_WIDTH downto 0) := (others => '0');
+  signal     wr_pntr_rd_cdc        : std_logic_vector(WR_PNTR_WIDTH-1 downto 0) := (others => '0');
+  signal     wr_pntr_rd_cdc_dc     : std_logic_vector(WR_PNTR_WIDTH downto 0) := (others => '0');
+  signal     wr_pntr_rd            : std_logic_vector(WR_PNTR_WIDTH-1 downto 0) := (others => '0');
+  signal     wr_pntr_rd_dc         : std_logic_vector(WR_PNTR_WIDTH downto 0) := (others => '0');
+  signal     rd_pntr_wr_adj        : std_logic_vector(WR_PNTR_WIDTH-1 downto 0) := (others => '0');
+  signal     rd_pntr_wr_adj_dc     : std_logic_vector(WR_PNTR_WIDTH downto 0) := (others => '0');
+  signal     wr_pntr_plus1         : std_logic_vector(WR_PNTR_WIDTH-1 downto 0) := (others => '0');
+  signal     wr_pntr_plus2         : std_logic_vector(WR_PNTR_WIDTH-1 downto 0) := (others => '0');
+  signal     wr_pntr_plus3         : std_logic_vector(WR_PNTR_WIDTH-1 downto 0) := (others => '0');
+  signal     wr_pntr_plus1_pf      : std_logic_vector(WR_PNTR_WIDTH downto 0) := (others => '0');
+  signal     rd_pntr_wr_adj_inv_pf : std_logic_vector(WR_PNTR_WIDTH downto 0) := (others => '0');
   signal     diff_pntr_pf_q        : std_logic_vector(WR_PNTR_WIDTH downto 0)        := (others => '0');
-  signal     diff_pntr_pf          : std_logic_vector(WR_PNTR_WIDTH-1 downto 0);
-  signal     rd_pntr               : std_logic_vector(RD_PNTR_WIDTH-1 downto 0);
-  signal     rd_pntr_ext           : std_logic_vector(RD_PNTR_WIDTH downto 0);
-  signal     rd_pntr_wr_cdc        : std_logic_vector(RD_PNTR_WIDTH-1 downto 0);
-  signal     rd_pntr_wr            : std_logic_vector(RD_PNTR_WIDTH-1 downto 0);
-  signal     rd_pntr_wr_cdc_dc     : std_logic_vector(RD_PNTR_WIDTH downto 0);
-  signal     rd_pntr_wr_dc         : std_logic_vector(RD_PNTR_WIDTH downto 0);
-  signal     wr_pntr_rd_adj        : std_logic_vector(RD_PNTR_WIDTH-1 downto 0);
-  signal     wr_pntr_rd_adj_dc     : std_logic_vector(RD_PNTR_WIDTH downto 0);
-  signal     rd_pntr_plus1         : std_logic_vector(RD_PNTR_WIDTH-1 downto 0);
-  signal     rd_pntr_plus2         : std_logic_vector(RD_PNTR_WIDTH-1 downto 0);
-  signal     invalid_state : std_logic;
-  signal     valid_fwft : std_logic;
-  signal     ram_valid_fwft : std_logic;
-  signal     going_empty : std_logic;
-  signal     leaving_empty : std_logic;
-  signal     going_aempty : std_logic;
-  signal     leaving_aempty : std_logic;
+  signal     diff_pntr_pf          : std_logic_vector(WR_PNTR_WIDTH-1 downto 0) := (others => '0');
+  signal     rd_pntr               : std_logic_vector(RD_PNTR_WIDTH-1 downto 0) := (others => '0');
+  signal     rd_pntr_ext           : std_logic_vector(RD_PNTR_WIDTH downto 0) := (others => '0');
+  signal     rd_pntr_wr_cdc        : std_logic_vector(RD_PNTR_WIDTH-1 downto 0) := (others => '0');
+  signal     rd_pntr_wr            : std_logic_vector(RD_PNTR_WIDTH-1 downto 0) := (others => '0');
+  signal     rd_pntr_wr_cdc_dc     : std_logic_vector(RD_PNTR_WIDTH downto 0) := (others => '0');
+  signal     rd_pntr_wr_dc         : std_logic_vector(RD_PNTR_WIDTH downto 0) := (others => '0');
+  signal     wr_pntr_rd_adj        : std_logic_vector(RD_PNTR_WIDTH-1 downto 0) := (others => '0');
+  signal     wr_pntr_rd_adj_dc     : std_logic_vector(RD_PNTR_WIDTH downto 0) := (others => '0');
+  signal     rd_pntr_plus1         : std_logic_vector(RD_PNTR_WIDTH-1 downto 0) := (others => '0');
+  signal     rd_pntr_plus2         : std_logic_vector(RD_PNTR_WIDTH-1 downto 0) := (others => '0');
+  signal     invalid_state : std_logic := '0';
+  signal     valid_fwft : std_logic := '0';
+  signal     ram_valid_fwft : std_logic := '0';
+  signal     going_empty : std_logic := '0';
+  signal     leaving_empty : std_logic := '0';
+  signal     going_aempty : std_logic := '0';
+  signal     leaving_aempty : std_logic := '0';
   signal     ram_empty_i  : std_logic := '1';
   signal     ram_aempty_i : std_logic := '1';
-  signal     empty_i : std_logic;
-  signal     going_full : std_logic;
-  signal     leaving_full : std_logic;
-  signal     going_afull : std_logic;
-  signal     leaving_afull : std_logic;
+  signal     empty_i : std_logic := '0';
+  signal     going_full : std_logic := '0';
+  signal     leaving_full : std_logic := '0';
+  signal     going_afull : std_logic := '0';
+  signal     leaving_afull : std_logic := '0';
   signal     prog_full_i : std_logic := FULL_RST_VAL;
   signal     ram_full_i  : std_logic := FULL_RST_VAL;
   signal     ram_afull_i : std_logic := FULL_RST_VAL;
   signal     ram_full_n  : std_logic := not FULL_RST_VAL;
-  signal     ram_wr_en_i : std_logic;
-  signal     ram_rd_en_i : std_logic;
+  signal     ram_wr_en_i : std_logic := '0';
+  signal     ram_rd_en_i : std_logic := '0';
   signal     wr_ack_i : std_logic := '0';
-  signal     rd_en_i : std_logic;
-  signal     rd_en_fwft : std_logic;
-  signal     ram_regce : std_logic;
-  signal     ram_regce_pipe : std_logic;
-  signal     dout_i : std_logic_vector(READ_DATA_WIDTH-1 downto 0);
+  signal     rd_en_i : std_logic := '0';
+  signal     rd_en_fwft : std_logic := '0';
+  signal     ram_regce : std_logic := '0';
+  signal     ram_regce_pipe : std_logic := '0';
+  signal     dout_i : std_logic_vector(READ_DATA_WIDTH-1 downto 0) := (others => '0');
   signal     empty_fwft_i     : std_logic := '1';
   signal     aempty_fwft_i    : std_logic := '1';
   signal     empty_fwft_fb    : std_logic := '1';
@@ -285,23 +285,13 @@ architecture rtl of xpm_fifo_base is
   signal     underflow_i      : std_logic := '0';
   signal     data_valid_fwft  : std_logic := '0';
   signal     data_valid_std   : std_logic := '0';
-  signal     data_vld_std : std_logic;
-  signal     wrp_gt_rdp_and_red : std_logic;
-  signal     wrp_lt_rdp_and_red : std_logic;
+  signal     data_vld_std : std_logic := '0';
   signal     ram_wr_en_pf_q  : std_logic := '0';
   signal     ram_rd_en_pf_q  : std_logic := '0';
-  signal     ram_wr_en_pf : std_logic;
-  signal     ram_rd_en_pf : std_logic;
-  signal     wr_pntr_plus1_pf_carry : std_logic;
-  signal     rd_pntr_wr_adj_pf_carry : std_logic;
-  signal     write_allow : std_logic;
-  signal     read_allow : std_logic;
-  signal     read_only : std_logic;
-  signal     write_only : std_logic;
-  signal     write_only_q : std_logic;
-  signal     read_only_q : std_logic;
-  signal     diff_pntr_pe_reg1 : std_logic_vector(RD_PNTR_WIDTH-1 downto 0);
-  signal     diff_pntr_pe_reg2 : std_logic_vector(RD_PNTR_WIDTH-1 downto 0);
+  signal     wr_pntr_plus1_pf_carry : std_logic := '0';
+  signal     rd_pntr_wr_adj_pf_carry : std_logic := '0';
+  --signal     diff_pntr_pe_reg1 : std_logic_vector(RD_PNTR_WIDTH-1 downto 0);
+  --signal     diff_pntr_pe_reg2 : std_logic_vector(RD_PNTR_WIDTH-1 downto 0);
   signal     diff_pntr_pe      : std_logic_vector(RD_PNTR_WIDTH-1 downto 0) := (others => '0');
   signal     prog_empty_i : std_logic := '1';
   -- function to validate the write depth value
@@ -315,22 +305,16 @@ architecture rtl of xpm_fifo_base is
     end if;
   end function;
   
-  signal wr_en_i : std_logic;
-  signal wr_rst_i : std_logic;
-  signal rd_rst_i : std_logic;
+  --signal wr_en_i : std_logic;
+  signal wr_rst_i : std_logic := '0';
+  signal rd_rst_i : std_logic := '0';
   signal rd_rst_d2 : std_logic := '0';
-  signal rst_d1 : std_logic;
-  signal rst_d2 : std_logic;
-  signal clr_full : std_logic;
-  signal empty_fwft_d1 : std_logic;
-  signal leaving_empty_fwft_fe : std_logic;
-  signal leaving_empty_fwft_re : std_logic;
-  signal le_fwft_re : std_logic;
-  signal le_fwft_fe : std_logic;
-  signal extra_words_fwft : std_logic_vector(1 downto 0);
-  signal le_fwft_re_wr : std_logic;
-  signal le_fwft_fe_wr : std_logic;
-
+  signal rst_d1 : std_logic := '0';
+  signal rst_d2 : std_logic := '0';
+  signal clr_full : std_logic := '0';
+  signal empty_fwft_d1 : std_logic := '0';
+  signal extra_words_fwft : std_logic_vector(1 downto 0) := (others => '0');
+  
 
 begin --architecture rtl
 
@@ -493,6 +477,8 @@ begin --architecture rtl
     wrpp3_inst: entity work.xpm_counter_updn 
     generic map(WR_PNTR_WIDTH, 3)
     port map(wrst_busy, wr_clk, ram_wr_en_i, ram_wr_en_i, '0', wr_pntr_plus3);
+  else generate
+    wr_pntr_plus3 <= (others => '0');
   end generate gaf_wptr_p3;
 
   -- Read pointer generation
@@ -509,6 +495,8 @@ begin --architecture rtl
     rdpp2_inst: entity work.xpm_counter_updn 
       generic map(RD_PNTR_WIDTH, 2)
       port map(rd_rst_i, rd_clk, ram_rd_en_i, ram_rd_en_i, '0', rd_pntr_plus2);
+  else generate
+    rd_pntr_plus2 <= (others => '0');
   end generate gae_rptr_p2;
 
    full        <= ram_full_i;
@@ -581,12 +569,15 @@ begin --architecture rtl
         end if;
       end if;
     end process;
+  else generate
+    data_vld_std <= '0';
+    data_valid_std  <= '0';
   end generate gdvld;
 
   -- Simple dual port RAM instantiation for non-Built-in FIFO
   gen_sdpram: if (FIFO_MEMORY_TYPE < 4) generate
   -- Reset is not supported when ECC is enabled by the BRAM/URAM primitives
-    signal rst_int: std_logic;
+    signal rst_int: std_logic := '0';
     function USE_DRAM_CONSTRAINT_CALC(COMMON_CLK: integer; FIFO_MEMORY_T: integer) return integer is
     begin
       if COMMON_CLK = 0 and FIFO_MEMORY_T = 1 then
@@ -605,7 +596,7 @@ begin --architecture rtl
         end if;
     end function;
     constant WR_MODE_B           : integer := WR_MODE_B_CALC(FIFO_MEMORY_TYPE);
-    signal regceb_i : std_logic;
+    signal regceb_i : std_logic := '0';
     function CLOCKING_MODE_CALC(CC: integer) return integer is
     begin
         if CC = 1 then
@@ -725,7 +716,7 @@ begin --architecture rtl
   end generate gwrp_lt_rdp;
 
   gen_cdc_pntr: if (COMMON_CLOCK = 0 and RELATED_CLOCKS = 0) generate
-    signal src_in_bin: std_logic_vector(RD_PNTR_WIDTH downto 0);
+    signal src_in_bin: std_logic_vector(RD_PNTR_WIDTH downto 0) := (others => '0');
   begin
     -- Synchronize the write pointer in rd_clk domain
     wr_pntr_cdc_inst: entity work.xpm_cdc_gray 
@@ -1001,6 +992,16 @@ begin --architecture rtl
   end generate gen_pf_ic_rc;
 
   gen_pntr_flags_cc: if (COMMON_CLOCK = 1 and RELATED_CLOCKS = 0) generate
+      signal     ram_wr_en_pf : std_logic := '0';
+      signal     ram_rd_en_pf : std_logic := '0';
+      signal     write_allow : std_logic := '0';
+      signal     read_allow : std_logic := '0';
+      signal     read_only : std_logic := '0';
+      signal     write_only : std_logic := '0';
+      signal     write_only_q : std_logic := '0';
+      signal     read_only_q : std_logic := '0';
+
+  begin
      wr_pntr_rd <= wr_pntr;
      rd_pntr_wr <= rd_pntr;
      wr_pntr_rd_dc <= wr_pntr_ext;
@@ -1028,6 +1029,8 @@ begin --architecture rtl
     end generate wrp_eq_rdp;
   
     wrp_gt_rdp: if (WR_PNTR_WIDTH > RD_PNTR_WIDTH) generate
+      signal     wrp_gt_rdp_and_red : std_logic := '0';
+    begin
        wrp_gt_rdp_and_red <= and wr_pntr_rd(WR_PNTR_WIDTH-RD_PNTR_WIDTH-1 downto 0);
   
        going_empty    <= '1' when ((wr_pntr_rd_adj = rd_pntr_plus1) and ((ram_wr_en_i and wrp_gt_rdp_and_red) = '0') and ram_rd_en_i = '1') else '0';
@@ -1050,6 +1053,8 @@ begin --architecture rtl
     end generate wrp_gt_rdp;
   
     wrp_lt_rdp: if (WR_PNTR_WIDTH < RD_PNTR_WIDTH) generate
+       signal     wrp_lt_rdp_and_red : std_logic := '0';
+    begin
        wrp_lt_rdp_and_red <= and rd_pntr_wr(RD_PNTR_WIDTH-WR_PNTR_WIDTH-1 downto 0);
   
        going_empty     <= '1' when ((wr_pntr_rd_adj = rd_pntr_plus1) and ((ram_wr_en_i = '0') and ram_rd_en_i = '1')) else '0';
@@ -1264,15 +1269,15 @@ begin --architecture rtl
         -- Programmanble Empty flag Generation
         -- Diff pointer Generation
         constant DIFF_MAX_RD : std_logic_vector(RD_PNTR_WIDTH-1 downto 0) := (others => '1');
-        signal  diff_pntr_pe_max: std_logic_vector(RD_PNTR_WIDTH-1 downto 0);
-        signal  carry : std_logic;
+        signal  diff_pntr_pe_max: std_logic_vector(RD_PNTR_WIDTH-1 downto 0) := (others => '0');
+        signal  carry : std_logic := '0';
         signal  diff_pntr_pe_asym   : std_logic_vector(RD_PNTR_WIDTH downto 0) := (others => '0');
-        signal  wr_pntr_rd_adj_asym : std_logic_vector(RD_PNTR_WIDTH downto 0);
-        signal  rd_pntr_asym        : std_logic_vector(RD_PNTR_WIDTH downto 0);
-        signal  full_reg : std_logic;
-        signal  rst_full_ff_reg1 : std_logic;
-        signal  rst_full_ff_reg2 : std_logic;
-        signal  diff_pntr_pe_i : std_logic_vector (RD_PNTR_WIDTH-1 downto 0);
+        signal  wr_pntr_rd_adj_asym : std_logic_vector(RD_PNTR_WIDTH downto 0) := (others => '0');
+        signal  rd_pntr_asym        : std_logic_vector(RD_PNTR_WIDTH downto 0) := (others => '0');
+        signal  full_reg : std_logic := '0';
+        signal  rst_full_ff_reg1 : std_logic := '0';
+        signal  rst_full_ff_reg2 : std_logic := '0';
+        signal  diff_pntr_pe_i : std_logic_vector (RD_PNTR_WIDTH-1 downto 0) := (others => '0');
       begin
          diff_pntr_pe_max <= DIFF_MAX_RD;
          wr_pntr_rd_adj_asym(RD_PNTR_WIDTH downto 0) <= wr_pntr_rd_adj & '1';
@@ -1285,7 +1290,7 @@ begin --architecture rtl
             full_reg             <= '0';
             rst_full_ff_reg1     <= '1';
             rst_full_ff_reg2     <= '1';
-            diff_pntr_pe_reg1    <= (others => '0');
+            --diff_pntr_pe_reg1    <= (others => '0');
           elsif rising_edge(rd_clk) then
             diff_pntr_pe_asym <= wr_pntr_rd_adj_asym + rd_pntr_asym;
             full_reg          <= ram_full_i;
@@ -1338,15 +1343,15 @@ begin --architecture rtl
 
    --reg  (1:0) curr_fwft_state = invalid;
    --reg  (1:0) next_fwft_state;-- = invalid;
-   signal next_fwft_state_d1 : std_logic;
-   signal ram_regout_en : std_logic;
-   signal going_empty_fwft : std_logic;
-   signal leaving_empty_fwft : std_logic;
-   signal ge_fwft_d1: std_logic;
-   signal count_up  : std_logic;
-   signal count_down: std_logic;
-   signal count_en  : std_logic;
-   signal count_rst : std_logic;
+   signal next_fwft_state_d1 : std_logic := '0';
+   signal ram_regout_en : std_logic := '0';
+   signal going_empty_fwft : std_logic := '0';
+   signal leaving_empty_fwft : std_logic := '0';
+   signal ge_fwft_d1: std_logic := '0';
+   signal count_up  : std_logic := '0';
+   signal count_down: std_logic := '0';
+   signal count_en  : std_logic := '0';
+   signal count_rst : std_logic := '0';
     
 
   begin
@@ -1484,8 +1489,8 @@ begin --architecture rtl
      end process;
 
      gae_fwft: if (EN_AE = '1') generate
-       signal going_aempty_fwft : std_logic;
-       signal leaving_aempty_fwft: std_logic;
+       signal going_aempty_fwft : std_logic := '0';
+       signal leaving_aempty_fwft: std_logic := '0';
      begin
 
        process (curr_fwft_state, rd_en, ram_empty_i) 
@@ -1558,8 +1563,6 @@ begin --architecture rtl
   end generate gen_fwft;
 
   ngen_fwft: if (READ_MODE = 0) generate
-     le_fwft_re       <= '0';
-     le_fwft_fe       <= '0';
      extra_words_fwft <= "00";
   end generate ngen_fwft;
 
@@ -1599,8 +1602,8 @@ begin --architecture rtl
   -- Write Data Count for Independent Clocks FIFO
   -- -------------------------------------------------------------------------------------------------------------------
   gwdc: if (EN_WDC = '1') generate
-    signal  wr_data_count_i : std_logic_vector(WR_DC_WIDTH_EXT-1 downto 0);
-    signal  diff_wr_rd_pntr : std_logic_vector(WR_DC_WIDTH_EXT-1 downto 0);
+    signal  wr_data_count_i : std_logic_vector(WR_DC_WIDTH_EXT-1 downto 0) := (others => '0');
+    signal  diff_wr_rd_pntr : std_logic_vector(WR_DC_WIDTH_EXT-1 downto 0) := (others => '0');
   begin
     diff_wr_rd_pntr <= wr_pntr_ext-rd_pntr_wr_adj_dc;
     
@@ -1622,8 +1625,8 @@ begin --architecture rtl
   -- Read Data Count for Independent Clocks FIFO
   -- -------------------------------------------------------------------------------------------------------------------
   grdc: if (EN_RDC = '1') generate
-    signal rd_data_count_i     : std_logic_vector(RD_DC_WIDTH_EXT-1 downto 0);
-    signal diff_wr_rd_pntr_rdc : std_logic_vector(RD_DC_WIDTH_EXT-1 downto 0);
+    signal rd_data_count_i     : std_logic_vector(RD_DC_WIDTH_EXT-1 downto 0) := (others => '0');
+    signal diff_wr_rd_pntr_rdc : std_logic_vector(RD_DC_WIDTH_EXT-1 downto 0) := (others => '0');
   begin
     diff_wr_rd_pntr_rdc <= wr_pntr_rd_adj_dc-rd_pntr_ext+extra_words_fwft;
     
