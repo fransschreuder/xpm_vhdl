@@ -197,9 +197,13 @@ begin
 
  process (expected_dout,rd_en_i, rd_en_d1)
  begin
-   expected_dout_reg(0) <= expected_dout;
-   rd_en_i_reg(0)       <= rd_en_i;
-   rd_en_d1_reg(0)      <= rd_en_d1;
+   for i in expected_dout_reg'left downto 0 loop
+    if i = 0 then
+       expected_dout_reg(i) <= expected_dout;
+       rd_en_i_reg(i)       <= rd_en_i;
+       rd_en_d1_reg(i)      <= rd_en_d1;
+    end if;
+   end loop;
  end process;
 
  g_for_expeced_dout: for rln in 1 to FIFO_READ_LATENCY-1 generate

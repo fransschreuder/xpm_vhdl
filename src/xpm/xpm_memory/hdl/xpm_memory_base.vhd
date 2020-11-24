@@ -30,7 +30,7 @@ entity xpm_memory_base is
     READ_DATA_WIDTH_A       : integer   := WRITE_DATA_WIDTH_A;
     BYTE_WRITE_WIDTH_A      : integer   := WRITE_DATA_WIDTH_A;
     ADDR_WIDTH_A            : integer   := integer(ceil(log2(real(MEMORY_SIZE/WRITE_DATA_WIDTH_A))));
-    READ_RESET_VALUE_A      : std_logic := '0';
+    READ_RESET_VALUE_A      : string    := "0";
     READ_LATENCY_A          : integer   := 2;
     WRITE_MODE_A            : integer   := 2;
     RST_MODE_A              : string    := "SYNC";
@@ -40,7 +40,7 @@ entity xpm_memory_base is
     READ_DATA_WIDTH_B       : integer  := WRITE_DATA_WIDTH_B;
     BYTE_WRITE_WIDTH_B      : integer  := WRITE_DATA_WIDTH_B;
     ADDR_WIDTH_B            : integer  := integer(ceil(log2(real(MEMORY_SIZE/WRITE_DATA_WIDTH_B))));
-    READ_RESET_VALUE_B      : std_logic:= '0';
+    READ_RESET_VALUE_B      : string    := "0";
     READ_LATENCY_B          : integer  := READ_LATENCY_A;
     WRITE_MODE_B            : integer  := WRITE_MODE_A;
     RST_MODE_B              : string   := "SYNC"
@@ -96,7 +96,7 @@ generic_dpram0: entity work.generic_dpram_dualclock
     g_data_width => WRITE_DATA_WIDTH_A,
     g_size       => MEMORY_SIZE/WRITE_DATA_WIDTH_A,
 
-    g_with_byte_enable         => true,
+    g_with_byte_enable         => false,
     g_addr_conflict_resolution => "read_first",
     g_init_file                => MEMORY_INIT_FILE,
     g_fail_if_file_not_found   => false
@@ -106,7 +106,7 @@ generic_dpram0: entity work.generic_dpram_dualclock
 
     -- Port A
     clka_i => clka,
-    bwea_i => wea,
+    bwea_i => (others => '0'), --wea,
     wea_i  => wea_or,
     aa_i   => addra,
     da_i   => dina,
@@ -114,11 +114,14 @@ generic_dpram0: entity work.generic_dpram_dualclock
     -- Port B
 
     clkb_i => clkb,
-    bweb_i => web,
+    bweb_i => (others => '0'), --web,
     web_i  => web_or,
     ab_i   => addrb,
     db_i   => dinb,
     qb_o   => doutb
     );
+    
+    sbiterrb <= '0';
+    dbiterrb <= '0';
 
 end rtl;

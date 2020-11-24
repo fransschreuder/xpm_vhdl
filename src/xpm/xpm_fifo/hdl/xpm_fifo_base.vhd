@@ -330,19 +330,7 @@ architecture rtl of xpm_fifo_base is
   signal extra_words_fwft : std_logic_vector(1 downto 0);
   signal le_fwft_re_wr : std_logic;
   signal le_fwft_fe_wr : std_logic;
-  
-  function DOUT_RESET_VALUE_FROM_STRING(V: string) return std_logic is
-  begin
-    if V = "0" then
-        return '0';
-    elsif V = "1" then
-        return '1';
-    else
-        report "DOUT_RESET_VALUE must be 0 or 1" severity error;
-    end if;
-  end function;
-  
-  constant DOUT_RESET_VALUE_SL : std_logic := DOUT_RESET_VALUE_FROM_STRING(DOUT_RESET_VALUE);
+
 
 begin --architecture rtl
 
@@ -663,7 +651,7 @@ begin --architecture rtl
     READ_DATA_WIDTH_A        => WRITE_DATA_WIDTH,
     BYTE_WRITE_WIDTH_A       => WRITE_DATA_WIDTH,
     ADDR_WIDTH_A             => WR_PNTR_WIDTH   ,
-    READ_RESET_VALUE_A       => '0'             ,
+    READ_RESET_VALUE_A       => "0"             ,
     READ_LATENCY_A           => 2               ,
     WRITE_MODE_A             => 2               ,
 
@@ -672,7 +660,7 @@ begin --architecture rtl
     READ_DATA_WIDTH_B        => READ_DATA_WIDTH ,
     BYTE_WRITE_WIDTH_B       => READ_DATA_WIDTH ,
     ADDR_WIDTH_B             => RD_PNTR_WIDTH   ,
-    READ_RESET_VALUE_B       => DOUT_RESET_VALUE_SL,
+    READ_RESET_VALUE_B       => DOUT_RESET_VALUE,
     READ_LATENCY_B           => RD_LATENCY      ,
     WRITE_MODE_B             => WR_MODE_B       
   )

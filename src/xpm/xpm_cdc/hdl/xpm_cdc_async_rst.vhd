@@ -83,7 +83,6 @@ architecture rtl of xpm_cdc_async_rst is
   signal arststages_ff : std_logic_vector(DEST_SYNC_FF-1 downto 0) := (others => DEF_VAL);
   attribute ASYNC_REG : string;
   attribute ASYNC_REG of arststages_ff : signal is "TRUE";
-  signal async_path_bit : std_logic;
   
   constant async_path_bit : std_logic := DEF_VALS(RST_ACTIVE_HIGH);
   signal reset_pol : std_logic;
@@ -110,7 +109,7 @@ begin
     end if;
 
     if ((RST_ACTIVE_HIGH /= 0) and (RST_ACTIVE_HIGH /= 1)) then
-       report("[XPM_CDC 7-3] RST_ACTIVE_HIGH ("&integer'image(RST_ACTIVE_HIGH)&") value is outside of valid range.") severity error
+       report("[XPM_CDC 7-3] RST_ACTIVE_HIGH ("&integer'image(RST_ACTIVE_HIGH)&") value is outside of valid range.") severity error;
        drc_err_flag := 1;
     end if;
     
