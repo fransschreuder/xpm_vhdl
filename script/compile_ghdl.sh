@@ -25,8 +25,8 @@ ghdl -a --work=xpm --std=08 ../src/xpm/xpm_fifo/hdl/xpm_fifo_reg_vec.vhd
 ghdl -a --work=xpm --std=08 ../src/xpm/xpm_fifo/hdl/xpm_reg_pipe_bit.vhd
 ghdl -a --work=xpm --std=08 ../src/xpm/xpm_fifo/hdl/xpm_fifo_base.vhd
 ghdl -a --work=xpm --std=08 ../src/xpm/xpm_fifo/hdl/xpm_fifo_async.vhd
-#ghdl -a --work=xpm --std=08 ../src/xpm/xpm_fifo/hdl/xpm_fifo_axif.vhd
-#ghdl -a --work=xpm --std=08 ../src/xpm/xpm_fifo/hdl/xpm_fifo_axil.vhd
+ghdl -a --work=xpm --std=08 ../src/xpm/xpm_fifo/hdl/xpm_fifo_axif.vhd
+ghdl -a --work=xpm --std=08 ../src/xpm/xpm_fifo/hdl/xpm_fifo_axil.vhd
 ghdl -a --work=xpm --std=08 ../src/xpm/xpm_fifo/hdl/xpm_fifo_axi_reg_slice.vhd
 ghdl -a --work=xpm --std=08 ../src/xpm/xpm_fifo/hdl/xpm_fifo_axis.vhd
 ghdl -a --work=xpm --std=08 ../src/xpm/xpm_fifo/hdl/xpm_fifo_sync.vhd
