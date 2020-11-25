@@ -606,6 +606,7 @@ begin --architecture rtl
         end if;
     end function;
     constant CLOCKING_MODE : integer := CLOCKING_MODE_CALC(COMMON_CLOCK);
+    signal wea: std_logic_vector(0 downto 0);
   begin
     gnd_rst: if(ECC_MODE /= 0) generate
        rst_int <= '0';
@@ -617,6 +618,8 @@ begin --architecture rtl
   -- Base module instantiation with simple dual port RAM configuration
   -- ----------------------------------------------------------------------
   regceb_i <=ram_regce_pipe when (READ_MODE = 0) else ram_regce;
+  
+  wea <= (others => ram_wr_en_i);
   
   xpm_memory_base_inst : entity work.xpm_memory_base 
   generic map (
@@ -665,7 +668,7 @@ begin --architecture rtl
     rsta           => '0',
     ena            => ram_wr_en_i,
     regcea         => '0',
-    wea            => (others => ram_wr_en_i),
+    wea            => wea,
     addra          => wr_pntr,
     dina           => din,
     injectsbiterra => injectsbiterr,
@@ -799,6 +802,8 @@ begin --architecture rtl
   end generate gen_cdc_pntr;
 
   gen_pntr_pf_rc: if (RELATED_CLOCKS = 1) generate
+    signal rd_pntr_wr_dc_in: std_logic_vector(RD_PNTR_WIDTH-1 downto 0);
+  begin
     rpw_rc_reg: entity work.xpm_fifo_reg_vec 
       generic map(RD_PNTR_WIDTH)
       port map(wrst_busy, wr_clk, rd_pntr, rd_pntr_wr);
@@ -811,9 +816,12 @@ begin --architecture rtl
       generic map(WR_PNTR_WIDTH+1)
       port map(rd_rst_i, rd_clk, wr_pntr_ext, wr_pntr_rd_dc);
 
+
+    
+    rd_pntr_wr_dc_in <= (rd_pntr_ext-extra_words_fwft);
     rpw_rc_reg_dc: entity work.xpm_fifo_reg_vec 
       generic map(RD_PNTR_WIDTH+1)
-      port map(wrst_busy, wr_clk, (rd_pntr_ext-extra_words_fwft), rd_pntr_wr_dc);
+      port map(wrst_busy, wr_clk, rd_pntr_wr_dc_in, rd_pntr_wr_dc);
   end generate gen_pntr_pf_rc;
 
   gen_pf_ic_rc: if (COMMON_CLOCK = 0 or RELATED_CLOCKS = 1) generate

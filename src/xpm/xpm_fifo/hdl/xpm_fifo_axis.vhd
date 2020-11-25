@@ -278,47 +278,47 @@ begin
   begin
     
     if (AXIS_FINAL_DATA_WIDTH > 4096) then
-      report("(XPM_FIFO_AXIS 20-2) Total width (sum of TDATA, TID, TDEST, TKEEP, TSTRB, TUSER and TLAST) of AXI Stream FIFO ("&integer'image(AXIS_FINAL_DATA_WIDTH)&") exceeds the maximum supported width (%0d). Please reduce the width of TDATA or TID or TDEST or TUSER")severity error;
+      report("(XPM_FIFO_AXIS 20-2) Total width (sum of TDATA, TID, TDEST, TKEEP, TSTRB, TUSER and TLAST) of AXI Stream FIFO ("&to_string(AXIS_FINAL_DATA_WIDTH)&") exceeds the maximum supported width (%0d). Please reduce the width of TDATA or TID or TDEST or TUSER")severity error;
       drc_err_flag_axis := 1;
     end if;
 
     if ((TDATA_WIDTH mod 8 /= 0) or TDATA_WIDTH < 8 or TDATA_WIDTH > 2048) then
-      report("(XPM_FIFO_AXIS 20-) TDATA_WIDTH ("&integer'image(TDATA_WIDTH)&") value is outside of legal range. TDATA_WIDTH value must be between 8 and 2048, and it must be multiples of 8.")severity error;
+      report("(XPM_FIFO_AXIS 20-) TDATA_WIDTH ("&to_string(TDATA_WIDTH)&") value is outside of legal range. TDATA_WIDTH value must be between 8 and 2048, and it must be multiples of 8.")severity error;
       drc_err_flag_axis := 1;
     end if;
 
     if (TID_WIDTH < 1 or TID_WIDTH > 32) then
-      report("(XPM_FIFO_AXIS 20-4) TID_WIDTH ("&integer'image(TID_WIDTH)&") value is outside of legal range. TID_WIDTH value must be between 1 and 32, and it must be multiples of 8.")severity error;
+      report("(XPM_FIFO_AXIS 20-4) TID_WIDTH ("&to_string(TID_WIDTH)&") value is outside of legal range. TID_WIDTH value must be between 1 and 32, and it must be multiples of 8.")severity error;
       drc_err_flag_axis := 1;
     end if;
 
     if (TDEST_WIDTH < 1 or TDEST_WIDTH > 32) then
-      report("(XPM_FIFO_AXIS 20-5) TDEST_WIDTH ("&integer'image(TDEST_WIDTH)&") value is outside of legal range. TDEST_WIDTH value must be between 1 and 32, and it must be multiples of 8.")severity error;
+      report("(XPM_FIFO_AXIS 20-5) TDEST_WIDTH ("&to_string(TDEST_WIDTH)&") value is outside of legal range. TDEST_WIDTH value must be between 1 and 32, and it must be multiples of 8.")severity error;
       drc_err_flag_axis := 1;
     end if;
 
     if (TUSER_WIDTH < 1 or TUSER_WIDTH > TUSER_MAX_WIDTH) then
-      report("(XPM_FIFO_AXIS 20-6) TUSER_WIDTH ("&integer'image(TUSER_WIDTH)&") value is outside of legal range. TUSER_WIDTH value must be between 1 and "&integer'image(TUSER_MAX_WIDTH)&" and it must be multiples of 8.")severity error;
+      report("(XPM_FIFO_AXIS 20-6) TUSER_WIDTH ("&to_string(TUSER_WIDTH)&") value is outside of legal range. TUSER_WIDTH value must be between 1 and "&to_string(TUSER_MAX_WIDTH)&" and it must be multiples of 8.")severity error;
       drc_err_flag_axis := 1;
     end if;
 
     if (RELATED_CLOCKS = 1 and P_PKT_MODE /= 0) then
-      report("(XPM_FIFO_AXIS 20-7) RELATED_CLOCKS ("&integer'image(RELATED_CLOCKS)&") value is outside of legal range. RELATED_CLOCKS value must be 0 when PACKET_FIFO is set to XPM_FIFO_AXIS.")severity error;
+      report("(XPM_FIFO_AXIS 20-7) RELATED_CLOCKS ("&to_string(RELATED_CLOCKS)&") value is outside of legal range. RELATED_CLOCKS value must be 0 when PACKET_FIFO is set to XPM_FIFO_AXIS.")severity error;
       drc_err_flag_axis := 1;
     end if;
 
     if (EN_ADV_FEATURE_AXIS(13) = '1' and (P_PKT_MODE /= 1 or P_COMMON_CLOCK /= 0)) then
-      report("(XPM_FIFO_AXIS 20-8) USE_ADV_FEATURES(13) ("&std_logic'image(EN_ADV_FEATURE_AXIS(13))&") value is outside of legal range. USE_ADV_FEATURES(13) can be set to 1 only for packet mode in asynchronous AXI-Stream FIFO.") severity error;
+      report("(XPM_FIFO_AXIS 20-8) USE_ADV_FEATURES(13) ("&to_string(EN_ADV_FEATURE_AXIS(13))&") value is outside of legal range. USE_ADV_FEATURES(13) can be set to 1 only for packet mode in asynchronous AXI-Stream FIFO.") severity error;
       drc_err_flag_axis := 1;
     end if;
  
     -- Infos
     if (P_PKT_MODE = 1 and EN_ADV_FEATURE_AXIS(3) /= '1') then
-      report("(XPM_FIFO_AXIS 21-1) Almost full flag option is not enabled (USE_ADV_FEATURES(3) = "&std_logic'image(EN_ADV_FEATURE_AXIS(3))&") but Packet FIFO mode requires almost_full to be enabled. XPM_FIFO_AXIS enables the Almost full flag automatically. You may ignore almost_full port if not required") severity note;
+      report("(XPM_FIFO_AXIS 21-1) Almost full flag option is not enabled (USE_ADV_FEATURES(3) = "&to_string(EN_ADV_FEATURE_AXIS(3))&") but Packet FIFO mode requires almost_full to be enabled. XPM_FIFO_AXIS enables the Almost full flag automatically. You may ignore almost_full port if not required") severity note;
     end if;
 
     if (P_PKT_MODE = 1 and EN_ADV_FEATURE_AXIS(11) /= '1') then
-      report("(XPM_FIFO_AXIS 21-1) Almost empty flag option is not enabled (USE_ADV_FEATURES(11) = "&std_logic'image(EN_ADV_FEATURE_AXIS(11))&") but Packet FIFO mode requires almost_empty to be enabled. XPM_FIFO_AXIS enables the Almost empty flag automatically. You may ignore almost_empty port if not required") severity note;
+      report("(XPM_FIFO_AXIS 21-1) Almost empty flag option is not enabled (USE_ADV_FEATURES(11) = "&to_string(EN_ADV_FEATURE_AXIS(11))&") but Packet FIFO mode requires almost_empty to be enabled. XPM_FIFO_AXIS enables the Almost empty flag automatically. You may ignore almost_empty port if not required") severity note;
     end if;
  
     if (drc_err_flag_axis = 1) then

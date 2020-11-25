@@ -5,7 +5,6 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std_unsigned.all;
 use ieee.numeric_std.all;
-use ieee.std_logic_misc.all;
 library std;
 use std.env.all;
 entity xpm_fifo_gen_pctrl is
@@ -165,7 +164,7 @@ begin
     if(RESET_RD = '1') then
       sim_done_i <= '0';
     elsif rising_edge(RD_CLK) then
-      if(((( or_reduce( sim_stop_cntr)) = '0')  and  (TB_STOP_CNT /= 0))  or  stop_on_err = '1') then
+      if(((( or sim_stop_cntr) = '0')  and  (TB_STOP_CNT /= 0))  or  stop_on_err = '1') then
          sim_done_i <= '1';
       end if;
     end if;
@@ -241,7 +240,7 @@ end process;
         full_ds_timeout <= (others => '0');
       elsif rising_edge(WR_CLK) then
         if(state = '1') then
-          if(rd_en_wr_dom2 = '1' and  ( wr_en_i = '0')  and  FULL = '1'  and  ( and_reduce( wrw_gt_rdw)) = '1') then
+          if(rd_en_wr_dom2 = '1' and  ( wr_en_i = '0')  and  FULL = '1'  and  ( and wrw_gt_rdw) = '1') then
             full_ds_timeout <= full_ds_timeout + '1';
           else
             full_ds_timeout <= (others => '0');
@@ -270,7 +269,7 @@ end process;
       empty_ds_timeout <= (others => '0');
     elsif rising_edge(RD_CLK) then
         if(state_rd_dom2 = '0') then
-          if(wr_en_rd_dom2 = '1'  and  (rd_en_i = '0')  and  EMPTY = '1' and  ( and_reduce(rdw_gt_wrw)) = '1') then
+          if(wr_en_rd_dom2 = '1'  and  (rd_en_i = '0')  and  EMPTY = '1' and  ( and rdw_gt_wrw) = '1') then
             empty_ds_timeout <= empty_ds_timeout + '1';
           else
              empty_ds_timeout <= (others => '0');
@@ -288,7 +287,7 @@ end process;
       if(C_APPLICATION_TYPE = 1) then
         full_chk_i <= '0';
       else
-        full_chk_i <= ( and_reduce( full_as_timeout))  or  ( and_reduce(full_ds_timeout));
+        full_chk_i <= ( and full_as_timeout)  or  ( and full_ds_timeout);
       end if;
     end if;
   end process;
@@ -302,7 +301,7 @@ end process;
       if(C_APPLICATION_TYPE = 1) then
         empty_chk_i <= '0';
       else
-        empty_chk_i <= ( and_reduce( empty_as_timeout))  or  ( and_reduce( empty_ds_timeout));
+        empty_chk_i <= ( and empty_as_timeout)  or  ( and empty_ds_timeout);
       end if;
     end if;
   end process;
@@ -420,7 +419,7 @@ end process;
        else
         wr_cntr <= (others => '0');
         if(rd_en_wr_dom2 = '0') then
-          if(wr_en_i = '1') then
+          if(wr_en_i) then
                full_as_timeout <= full_as_timeout + '1';
           end if;
         else 

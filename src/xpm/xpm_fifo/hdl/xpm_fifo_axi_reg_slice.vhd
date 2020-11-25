@@ -2,7 +2,6 @@ library ieee;
 use ieee.std_logic_1164.all;
 library std;
 use std.env.all;
-use ieee.std_logic_misc.all;
 
 entity xpm_fifo_axi_reg_slice is
   generic (
@@ -54,8 +53,8 @@ begin
     end if;
   end process;
 
-   sync_reset     <= (or_reduce( sckt_wr_rst_cc(RST_BUSY_LEN-5 downto 0))) or arst_sync_wr(1);
-   extnd_reset    <= (or_reduce( sckt_wr_rst_cc)) or arst_sync_wr(1);
+   sync_reset     <= (or sckt_wr_rst_cc(RST_BUSY_LEN-5 downto 0)) or arst_sync_wr(1);
+   extnd_reset    <= (or sckt_wr_rst_cc) or arst_sync_wr(1);
   --------------------------------------------------------------------
   --
   -- Both FWD and REV mode

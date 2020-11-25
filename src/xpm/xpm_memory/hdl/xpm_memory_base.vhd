@@ -3,7 +3,6 @@ use ieee.std_logic_1164.all;
 library std;
 use std.env.all;
 use ieee.math_real.all;
-use ieee.std_logic_misc.all;
 
 entity xpm_memory_base is
   generic (
@@ -88,8 +87,8 @@ architecture rtl of xpm_memory_base is
 begin
 
     rst_n <= not rsta;
-    wea_or <= or_reduce(wea);
-    web_or <= or_reduce(web);
+    wea_or <= or wea;
+    web_or <= or web;
 
 generic_dpram0: entity work.generic_dpram_dualclock
   generic map(

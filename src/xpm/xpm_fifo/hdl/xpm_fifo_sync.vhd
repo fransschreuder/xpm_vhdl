@@ -159,7 +159,7 @@ begin
     variable drc_err_flag_sync : integer := 0;
   begin
     if (EN_ADV_FEATURE_SYNC(13) /= '0') then
-      report("(XPM_FIFO_SYNC 1-1) USE_ADV_FEATURES(13) = "&std_logic'image(EN_ADV_FEATURE_SYNC(13))&". This is a reserved field and must be set to 0.") severity error;
+      report("(XPM_FIFO_SYNC 1-1) USE_ADV_FEATURES(13) = "&to_string(EN_ADV_FEATURE_SYNC(13))&". This is a reserved field and must be set to 0.") severity error;
       drc_err_flag_sync := 1;
     end if;
   

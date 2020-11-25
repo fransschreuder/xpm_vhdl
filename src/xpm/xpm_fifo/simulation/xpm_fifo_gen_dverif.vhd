@@ -3,7 +3,6 @@
 --   Used for XPM FIFO read interface stimulus generation and data checking
 library ieee;
 use ieee.std_logic_1164.all;
-use ieee.std_logic_misc.all;
 use ieee.numeric_std_unsigned.all;
 library std;
 use std.env.all;
@@ -149,7 +148,7 @@ begin
         end if;
       end if;
     end process;
-    pr_r_en       <= rd_en_i  and  (not empty)  and  (and_reduce(rd_cntr));
+    pr_r_en       <= rd_en_i  and  (not empty)  and  (and rd_cntr);
     
     process (rd_cntr) 
     begin
