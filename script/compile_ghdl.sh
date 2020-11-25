@@ -37,4 +37,5 @@ ghdl -a --work=xpm --std=08 ../src/xpm/xpm_fifo/simulation/xpm_fifo_gen_pctrl.vh
 ghdl -a --work=xpm --std=08 ../src/xpm/xpm_fifo/simulation/xpm_fifo_ex.vhd
 ghdl -a --work=xpm --std=08 ../src/xpm/xpm_fifo/simulation/xpm_fifo_tb.vhd
 ghdl -e --work=xpm --std=08 xpm_fifo_tb
-ghdl -r --work=xpm --std=08 xpm_fifo_tb --max-stack-alloc=0
+ghdl -r --work=xpm --std=08 xpm_fifo_tb --max-stack-alloc=0 --wave=xpm_fifo_tb.ghw
+gtkwave xpm_fifo_tb.ghw
