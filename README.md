@@ -23,4 +23,11 @@ cd script
 
 This library can probably be synthesized, however the intention is to use it with simulation only. If synthesis is needed, I recommend to use the original xpm library in Verilog that Xilinx provided.
 
+## Disclaimer
 
+This library was not created by Xilinx, but it should be functionally the same or similar to the Xilinx XPM library.
+
+This library has not completely been verified, if you find any bugs or limitations please report using the bug trackers.
+
+Known limitations:
+ * ECC mode and bit error injection is not implemented
