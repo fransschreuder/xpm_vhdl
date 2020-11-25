@@ -67,48 +67,48 @@ architecture tb of xpm_fifo_ex is
 
 --reg-wire Decalrations
  signal    sleep     : std_logic := '0';
- signal    prog_full : std_logic;
- signal    wr_data_count : std_logic_vector(WR_DATA_COUNT_WIDTH-1 downto 0);
- signal    overflow: std_logic;
- signal    wr_rst_busy: std_logic;
- signal    prog_empty: std_logic;
- signal    rd_data_count : std_logic_vector(RD_DATA_COUNT_WIDTH-1 downto 0);
- signal    underflow: std_logic;
- signal    rd_rst_busy: std_logic;
+ signal    prog_full : std_logic := '0';
+ signal    wr_data_count : std_logic_vector(WR_DATA_COUNT_WIDTH-1 downto 0) := (others => '0');
+ signal    overflow: std_logic := '0';
+ signal    wr_rst_busy: std_logic := '0';
+ signal    prog_empty: std_logic := '0';
+ signal    rd_data_count : std_logic_vector(RD_DATA_COUNT_WIDTH-1 downto 0) := (others => '0');
+ signal    underflow: std_logic := '0';
+ signal    rd_rst_busy: std_logic := '0';
  signal    injectsbiterr: std_logic := '0';
  signal    injectdbiterr: std_logic := '0';
- signal    sbiterr: std_logic;
- signal    dbiterr: std_logic;
+ signal    sbiterr: std_logic := '0';
+ signal    dbiterr: std_logic := '0';
 -- FIFO interface signal declarations
- signal    wr_en  : std_logic;
- signal    rd_en  : std_logic;
- signal    din    : std_logic_vector(WRITE_DATA_WIDTH-1 downto 0); 
- signal    dout   : std_logic_vector(READ_DATA_WIDTH-1 downto 0) ; 
- signal    dout_i : std_logic_vector(READ_DATA_WIDTH-1 downto 0) ; 
- signal    full   : std_logic; 
- signal    empty  : std_logic;
+ signal    wr_en  : std_logic := '0';
+ signal    rd_en  : std_logic := '0';
+ signal    din    : std_logic_vector(WRITE_DATA_WIDTH-1 downto 0) := (others => '0'); 
+ signal    dout   : std_logic_vector(READ_DATA_WIDTH-1 downto 0)  := (others => '0'); 
+ signal    dout_i : std_logic_vector(READ_DATA_WIDTH-1 downto 0)  := (others => '0'); 
+ signal    full   : std_logic := '0'; 
+ signal    empty  : std_logic := '0';
 
- signal    wr_data        : std_logic_vector(WRITE_DATA_WIDTH-1 downto 0);
- signal    wr_en_i        : std_logic;
- signal    rd_en_i        : std_logic;
- signal    full_i         : std_logic;
- signal    empty_i        : std_logic;
- signal    almost_full_i  : std_logic;
- signal    almost_empty_i : std_logic;
- signal    prc_we_i       : std_logic;
- signal    prc_re_i       : std_logic;
- signal    dout_chk_i     : std_logic;
- signal    rst_int_rd     : std_logic;
- signal    rst_int_wr     : std_logic;
- signal    reset_en       : std_logic;
+ signal    wr_data        : std_logic_vector(WRITE_DATA_WIDTH-1 downto 0) := (others => '0');
+ signal    wr_en_i        : std_logic := '0';
+ signal    rd_en_i        : std_logic := '0';
+ signal    full_i         : std_logic := '0';
+ signal    empty_i        : std_logic := '0';
+ constant    almost_full_i  : std_logic := '0';
+ constant    almost_empty_i : std_logic := '0';
+ signal    prc_we_i       : std_logic := '0';
+ signal    prc_re_i       : std_logic := '0';
+ signal    dout_chk_i     : std_logic := '0';
+ signal    rst_int_rd     : std_logic := '0';
+ signal    rst_int_wr     : std_logic := '0';
+ signal    reset_en       : std_logic := '0';
 
- signal    rst_async_wr1  : std_logic;
- signal    rst_async_wr2  : std_logic;
- signal    rst_async_wr3  : std_logic;
- signal    rst_async_rd1  : std_logic;
- signal    rst_async_rd2  : std_logic;
- signal    rst_async_rd3  : std_logic;
- signal    rd_clk_i       : std_logic;
+ signal    rst_async_wr1  : std_logic := '0';
+ signal    rst_async_wr2  : std_logic := '0';
+ signal    rst_async_wr3  : std_logic := '0';
+ signal    rst_async_rd1  : std_logic := '0';
+ signal    rst_async_rd2  : std_logic := '0';
+ signal    rst_async_rd3  : std_logic := '0';
+ signal    rd_clk_i       : std_logic := '0';
 
 begin
 

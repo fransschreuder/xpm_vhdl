@@ -86,9 +86,9 @@ begin
  begin
    wait until(sim_done = '1');
    if((status /= x"00")  and  (status /= x"01")) then
-         report("Simulation failed") severity error;
+         report("xpm_fifo_tb: Simulation failed") severity error;
    else 
-         report("Test Completed Successfully") severity note;
+         report("xpm_fifo_tb: Test Completed Successfully") severity note;
    end if;
    std.env.finish;
    wait;

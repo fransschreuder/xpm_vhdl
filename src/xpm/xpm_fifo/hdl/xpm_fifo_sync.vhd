@@ -152,7 +152,7 @@ architecture rtl of xpm_fifo_sync is
   end function;
   
   constant P_WAKEUP_TIME : integer := WAKEUP_TIME;
-  signal wr_rst_busy_s: std_logic;
+  signal wr_rst_busy_s: std_logic := '0';
 begin
   
   process

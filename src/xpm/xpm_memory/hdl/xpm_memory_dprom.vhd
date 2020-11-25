@@ -71,12 +71,24 @@ end xpm_memory_dprom;
 
 
 architecture rtl of xpm_memory_dprom is
--- Define local parameters for mapping with base file
-  constant P_MEMORY_PRIMITIVE      : integer := 2;
-  constant P_CLOCKING_MODE         : integer := 1;
-  constant P_ECC_MODE              : integer := 0;
-  constant P_WAKEUP_TIME           : integer := 0;
-  constant P_MEMORY_OPTIMIZATION   : integer := 0;
+  function P_MEMORY_PRIMITIVE return integer is begin
+    if    (MEMORY_PRIMITIVE = "lutram"    or  MEMORY_PRIMITIVE = "LUTRAM"  or  MEMORY_PRIMITIVE = "distributed"  or  MEMORY_PRIMITIVE = "DISTRIBUTED" ) then return 1;
+    elsif (MEMORY_PRIMITIVE = "blockram"  or  MEMORY_PRIMITIVE = "BLOCKRAM"  or  MEMORY_PRIMITIVE = "block"  or  MEMORY_PRIMITIVE = "BLOCK" ) then return 2;
+    elsif (MEMORY_PRIMITIVE = "ultraram"  or  MEMORY_PRIMITIVE = "ULTRARAM"  or  MEMORY_PRIMITIVE = "ultra"  or  MEMORY_PRIMITIVE = "ULTRA" ) then return 3; else return 0; end if; end function;
+  
+  function P_CLOCKING_MODE return integer is begin
+   if    ( CLOCKING_MODE = "common_clock"       or  CLOCKING_MODE = "COMMON_CLOCK"     ) then return 0;
+   elsif ( CLOCKING_MODE = "independent_clock"  or  CLOCKING_MODE = "INDEPENDENT_CLOCK") then return 1; else return 0; end if; end function;
+
+  function P_ECC_MODE return integer is begin
+    if    ( ECC_MODE  = "no_ecc"                  or  ECC_MODE  = "NO_ECC"                ) then return 0;
+    elsif ( ECC_MODE  = "encode_only"             or  ECC_MODE  = "ENCODE_ONLY"           ) then return 1;
+    elsif ( ECC_MODE  = "decode_only"             or  ECC_MODE  = "DECODE_ONLY"           ) then return 2;
+    elsif ( ECC_MODE  = "both_encode_and_decode"  or  ECC_MODE  = "BOTH_ENCODE_AND_DECODE") then return 3; else return 4; end if; end function;
+
+  function P_WAKEUP_TIME return integer is begin if (WAKEUP_TIME = "use_sleep_pin"     or  WAKEUP_TIME = "USE_SLEEP_PIN") then return 2; else return 0; end if; end function;
+
+  function P_MEMORY_OPTIMIZATION return integer is begin if (MEMORY_OPTIMIZATION = "false") then return 0; else return 1; end if; end function;
 begin
 
   -- -------------------------------------------------------------------------------------------------------------------
@@ -87,7 +99,7 @@ begin
   generic map (
 
     -- Common module parameters
-    MEMORY_OPTIMIZATION      => MEMORY_OPTIMIZATION,
+    MEMORY_OPTIMIZATION      => P_MEMORY_OPTIMIZATION,
     MEMORY_TYPE        => 4,
     MEMORY_SIZE        => MEMORY_SIZE,
     MEMORY_PRIMITIVE   => P_MEMORY_PRIMITIVE,

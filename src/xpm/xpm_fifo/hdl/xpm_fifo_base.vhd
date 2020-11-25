@@ -56,7 +56,7 @@ port (
   -- Read Domain ports
     rd_clk          : in  std_logic;
     rd_en           : in  std_logic;
-    dout            : out std_logic_vector(READ_DATA_WIDTH-1 downto 0);
+    dout            : out std_logic_vector(READ_DATA_WIDTH-1 downto 0) := (others => '0');
     empty           : out std_logic;
     prog_empty      : out std_logic;
     rd_data_count   : out std_logic_vector(RD_DATA_COUNT_WIDTH-1 downto 0);
@@ -635,7 +635,7 @@ begin --architecture rtl
     MEMORY_INIT_PARAM        => ""                   ,
     WAKEUP_TIME              => WAKEUP_TIME          ,
     MESSAGE_CONTROL          => 0                    ,
-    MEMORY_OPTIMIZATION      => "true"               ,
+    MEMORY_OPTIMIZATION      => 0               ,
     AUTO_SLEEP_TIME          => 0                    ,
     USE_EMBEDDED_CONSTRAINT  => USE_DRAM_CONSTRAINT  ,
     CASCADE_HEIGHT           => CASCADE_HEIGHT       ,

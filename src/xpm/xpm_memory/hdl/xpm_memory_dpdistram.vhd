@@ -59,15 +59,19 @@ end xpm_memory_dpdistram;
 
 architecture rtl of xpm_memory_dpdistram is
 
-  constant P_CLOCKING_MODE : integer := 1;
-  constant P_MEMORY_OPTIMIZATION  : integer := 0;
+  
+  function P_CLOCKING_MODE return integer is begin
+   if    ( CLOCKING_MODE = "common_clock"       or  CLOCKING_MODE = "COMMON_CLOCK"     ) then return 0;
+   elsif ( CLOCKING_MODE = "independent_clock"  or  CLOCKING_MODE = "INDEPENDENT_CLOCK") then return 1; else return 0; end if; end function;
+
+  function P_MEMORY_OPTIMIZATION return integer is begin if (MEMORY_OPTIMIZATION = "false") then return 0; else return 1; end if; end function;
 
 begin
 
   xpm_memory_base_inst: entity work.xpm_memory_base 
   generic map (
     -- Common module parameters
-    MEMORY_OPTIMIZATION      => MEMORY_OPTIMIZATION,
+    MEMORY_OPTIMIZATION      => P_MEMORY_OPTIMIZATION,
     MEMORY_TYPE              => 2 ,
     MEMORY_SIZE              => MEMORY_SIZE,
     MEMORY_PRIMITIVE         => 1 ,

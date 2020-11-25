@@ -3,6 +3,9 @@ use ieee.std_logic_1164.all;
 library std;
 use std.env.all;
 use ieee.math_real.all;
+use std.textio.all;
+use ieee.numeric_std.all;
+use ieee.numeric_std_unsigned.all;
 
 entity xpm_memory_base is
   generic (
@@ -17,7 +20,7 @@ entity xpm_memory_base is
     MEMORY_INIT_PARAM       : string  := "";
     USE_MEM_INIT_MMI        : integer := 0;
     USE_MEM_INIT            : integer := 1;
-    MEMORY_OPTIMIZATION     : string  := "true";
+    MEMORY_OPTIMIZATION     : integer := 0;
     WAKEUP_TIME             : integer := 0;
     AUTO_SLEEP_TIME         : integer := 0;
     MESSAGE_CONTROL         : integer := 0;
@@ -60,7 +63,7 @@ port (
   dina           : in  std_logic_vector(WRITE_DATA_WIDTH_A-1 downto 0);
   injectsbiterra : in  std_logic;
   injectdbiterra : in  std_logic;
-  douta          : out std_logic_vector(READ_DATA_WIDTH_A-1 downto 0);
+  douta          : out std_logic_vector(READ_DATA_WIDTH_A-1 downto 0) := (others => '0');
   sbiterra       : out std_logic;
   dbiterra       : out std_logic;
                                                                               
@@ -74,54 +77,293 @@ port (
   dinb           : in  std_logic_vector(WRITE_DATA_WIDTH_B-1 downto 0);
   injectsbiterrb : in  std_logic;
   injectdbiterrb : in  std_logic;
-  doutb          : out std_logic_vector(READ_DATA_WIDTH_B-1 downto 0);
+  doutb          : out std_logic_vector(READ_DATA_WIDTH_B-1 downto 0) := (others => '0');
   sbiterrb       : out std_logic;
   dbiterrb       : out std_logic                                                            
 );
 end xpm_memory_base;
 
 architecture rtl of xpm_memory_base is
-    signal rst_n : std_logic := '0';
-    signal wea_or : std_logic := '0';
-    signal web_or : std_logic := '0';
+    type t_generic_ram_init is array (integer range <>, integer range <>) of std_logic;
+  
+    subtype t_meminit_array is t_generic_ram_init;
+    
+   
+    constant c_num_bytes_a : integer := (WRITE_DATA_WIDTH_A / BYTE_WRITE_WIDTH_A);
+    constant c_num_bytes_b : integer := (WRITE_DATA_WIDTH_B / BYTE_WRITE_WIDTH_B);
+    
+    
+  
+  function clog2(N : natural) return positive is
+  begin
+    if N <= 2 then
+      return 1;
+    elsif N mod 2 = 0 then
+      return 1 + clog2(N/2);
+    else
+      return 1 + clog2((N+1)/2);
+    end if;
+  end function;
+  
+  function f_empty_file_name (
+    file_name : in string)
+    return boolean is
+  begin
+    if file_name = "" or file_name = "none" then
+      return TRUE;
+    end if;
+    return FALSE;
+  end function f_empty_file_name;
+  
+  procedure f_file_open_check (
+    file_name        : in string;
+    open_status      : in file_open_status;
+    fail_if_notfound : in boolean) is
+  begin
+    if open_status /= OPEN_OK then
+
+      if fail_if_notfound then
+        report "f_load_mem_from_file(): can't open file '"&file_name&"'" severity FAILURE;
+      else
+        report "f_load_mem_from_file(): can't open file '"&file_name&"'" severity WARNING;
+      end if;
+    end if;
+  end procedure f_file_open_check;
+  
+  impure function f_load_mem_from_file
+    (file_name        : in string;
+     mem_size         : in integer;
+     mem_width        : in integer;
+     fail_if_notfound : boolean)
+    return t_meminit_array is
+
+    FILE f_in  : text;
+    variable l : line;
+    variable tmp_bv : bit_vector(mem_width-1 downto 0);
+    variable tmp_sv : std_logic_vector(mem_width-1 downto 0);
+    variable mem: t_meminit_array(0 to mem_size-1, mem_width-1 downto 0) := (others => (others => '0'));
+    variable status   : file_open_status;
+  begin
+    if f_empty_file_name(file_name) then
+      return mem;
+    end if;
+
+    file_open(status, f_in, file_name, read_mode);
+
+    f_file_open_check (file_name, status, fail_if_notfound);
+
+    for I in 0 to mem_size-1 loop
+      if not endfile(f_in) then
+        readline (f_in, l);
+        -- read function gives us bit_vector
+        read (l, tmp_bv);
+      else
+        tmp_bv := (others => '0');
+      end if;
+      tmp_sv := to_stdlogicvector(tmp_bv);
+      for J in 0 to mem_width-1 loop
+        mem(i, j) := tmp_sv(j);
+      end loop;
+    end loop;
+
+    if not endfile(f_in) then
+      report "f_load_mem_from_file(): file '"&file_name&"' is bigger than available memory" severity FAILURE;
+    end if;
+
+    file_close(f_in);
+    return mem;
+  end f_load_mem_from_file;
+  
+  impure function f_file_to_ramtype return std_logic_vector is
+    variable tmp    : std_logic_vector(MEMORY_SIZE-1 downto 0);
+    variable n, pos : integer;
+    variable arr    : t_meminit_array(0 to MEMORY_SIZE/WRITE_DATA_WIDTH_A-1, WRITE_DATA_WIDTH_A-1 downto 0);
+  begin
+    -- If no file was given, there is nothing to convert, just return
+    if (MEMORY_INIT_FILE = "" or MEMORY_INIT_FILE = "none") then
+      tmp := (others=>'0');
+      return tmp;
+    end if;
+
+    arr := f_load_mem_from_file(MEMORY_INIT_FILE, MEMORY_SIZE/WRITE_DATA_WIDTH_A, WRITE_DATA_WIDTH_A, false);
+    pos := 0;
+    while(pos < MEMORY_SIZE/WRITE_DATA_WIDTH_A)loop
+      n := 0;
+      -- avoid ISE loop iteration limit
+      while (pos < MEMORY_SIZE/WRITE_DATA_WIDTH_A and n < 4096) loop
+        for i in 0 to WRITE_DATA_WIDTH_A-1 loop
+          tmp(pos*WRITE_DATA_WIDTH_A+i) := arr(pos, i);
+        end loop;  -- i
+        n   := n+1;
+        pos := pos + 1;
+      end loop;
+    end loop;
+    return tmp;
+  end f_file_to_ramtype;
+
+  function f_is_synthesis return boolean is
+  begin
+    -- synthesis translate_off
+    return false;
+    -- synthesis translate_on
+    return true;
+  end f_is_synthesis;
+
+  type T is protected
+    impure function Get_A(Index: std_logic_vector(clog2(MEMORY_SIZE/READ_DATA_WIDTH_A)-1 downto 0)) return std_logic_vector;
+    procedure SetBE_A (Index: std_logic_vector(clog2(MEMORY_SIZE/WRITE_DATA_WIDTH_A)-1 downto 0); Data: std_logic_vector(WRITE_DATA_WIDTH_A-1 downto 0); BE : std_logic_vector(c_num_bytes_a-1 downto 0));
+    impure function Get_B(Index: std_logic_vector(clog2(MEMORY_SIZE/READ_DATA_WIDTH_B)-1 downto 0)) return std_logic_vector;
+    procedure SetBE_B (Index: std_logic_vector(clog2(MEMORY_SIZE/WRITE_DATA_WIDTH_B)-1 downto 0); Data: std_logic_vector(WRITE_DATA_WIDTH_B-1 downto 0); BE : std_logic_vector(c_num_bytes_b-1 downto 0));
+  end protected T;
+
+  type T is protected body
+    variable V : std_logic_vector(MEMORY_SIZE-1 downto 0) := f_file_to_ramtype;
+    
+    impure function Get_A(Index: std_logic_vector(clog2(MEMORY_SIZE/READ_DATA_WIDTH_A)-1 downto 0)) return std_logic_vector is
+    begin
+        return V(to_integer(unsigned(Index))*READ_DATA_WIDTH_A+READ_DATA_WIDTH_A-1 downto to_integer(unsigned(Index))*READ_DATA_WIDTH_A);
+    end function;
+    
+    procedure SetBE_A (Index: std_logic_vector(clog2(MEMORY_SIZE/WRITE_DATA_WIDTH_A)-1 downto 0); Data: std_logic_vector(WRITE_DATA_WIDTH_A-1 downto 0); BE : std_logic_vector(c_num_bytes_a-1 downto 0)) is
+      variable tmp: std_logic_vector(WRITE_DATA_WIDTH_A-1 downto 0);
+    begin
+        tmp := V(to_integer(unsigned(Index))*WRITE_DATA_WIDTH_A+WRITE_DATA_WIDTH_A-1 downto to_integer(unsigned(Index))*WRITE_DATA_WIDTH_A);
+        for i in 0 to c_num_bytes_a-1 loop
+          if BE(i) = '1' then
+            tmp((i+1)*c_num_bytes_a-1 downto i*8) := Data((i+1)*c_num_bytes_a-1 downto i*8);
+          end if;
+        end loop;
+        
+        V(to_integer(unsigned(Index))*WRITE_DATA_WIDTH_A+WRITE_DATA_WIDTH_A-1 downto to_integer(unsigned(Index))*WRITE_DATA_WIDTH_A) := tmp;
+        
+    end procedure;
+    
+    impure function Get_B(Index: std_logic_vector(clog2(MEMORY_SIZE/READ_DATA_WIDTH_B)-1 downto 0)) return std_logic_vector is
+    begin
+        return V(to_integer(unsigned(Index))*READ_DATA_WIDTH_B+READ_DATA_WIDTH_B-1 downto to_integer(unsigned(Index))*READ_DATA_WIDTH_B);
+    end function;
+    
+    procedure SetBE_B (Index: std_logic_vector(clog2(MEMORY_SIZE/WRITE_DATA_WIDTH_B)-1 downto 0); Data: std_logic_vector(WRITE_DATA_WIDTH_B-1 downto 0); BE : std_logic_vector(c_num_bytes_b-1 downto 0)) is
+      variable tmp: std_logic_vector(WRITE_DATA_WIDTH_B-1 downto 0);
+    begin
+        tmp := V(to_integer(unsigned(Index))*WRITE_DATA_WIDTH_B+WRITE_DATA_WIDTH_B-1 downto to_integer(unsigned(Index))*WRITE_DATA_WIDTH_B);
+        for i in 0 to c_num_bytes_b-1 loop
+          if BE(i) = '1' then
+            tmp((i+1)*c_num_bytes_b-1 downto i*8) := Data((i+1)*c_num_bytes_a-1 downto i*8);
+          end if;
+        end loop;
+        
+        V(to_integer(unsigned(Index))*WRITE_DATA_WIDTH_B+WRITE_DATA_WIDTH_B-1 downto to_integer(unsigned(Index))*WRITE_DATA_WIDTH_B) := tmp;
+        
+    end procedure;
+    
+  end protected body T;
+  
+  shared variable ram: T;
+    
+    
 begin
 
-    rst_n <= not rsta;
-    wea_or <= or wea;
-    web_or <= or web;
+    -- "write_first"   0;
+    -- "read_first"    1 ;
+    -- "no_change"     2 ; 
 
-generic_dpram0: entity work.generic_dpram_dualclock
-  generic map(
-    -- standard parameters
-    g_data_width => WRITE_DATA_WIDTH_A,
-    g_size       => MEMORY_SIZE/WRITE_DATA_WIDTH_A,
+  gen_readfirst_a : if(WRITE_MODE_A = 1) generate
+    process (clka, rsta)
+    begin
+      if rsta = '1' then
+        douta <= (others => '0');
+      elsif rising_edge(clka) then
+        if ena = '1' then
+          douta <= ram.Get_A(addra);
+          ram.SetBE_A(addra, dina, wea);
+        end if;
+      end if;
+    end process;
+  end generate gen_readfirst_a;
+  
+  gen_writefirst_a : if(WRITE_MODE_A = 0) generate
+    process (clka, rsta)
+    begin
+      if rsta = '1' then
+        douta <= (others => '0');
+      elsif rising_edge(clka) then
+        if ena = '1' then
+          ram.SetBE_A(addra, dina, wea);
+          douta <= ram.Get_A(addra);
+        end if;
+      end if;
+    end process;
+  end generate gen_writefirst_a;
+  
+  gen_nochange_a : if(WRITE_MODE_A = 2) generate
+    process (clka, rsta)
+    begin
+      if rsta = '1' then
+        douta <= (others => '0');
+      elsif rising_edge(clka) then
+        if ena = '1' then
+          if(wea = (wea'range=> '0')) then
+            douta <= ram.Get_A(addra);
+          else
+            ram.SetBE_A(addra, dina, wea);
+          end if;
+        end if;
+      end if;
+    end process;
+  end generate gen_nochange_a;
+  
+  
+  gen_readfirst_b : if(WRITE_MODE_B = 1) generate
+    process (clkb, rstb)
+    begin
+      if rstb = '1' then
+        doutb <= (others => '0');
+      elsif rising_edge(clkb) then
+        if enb = '1' then
+          doutb <= ram.Get_B(addrb);
+          ram.SetBE_B(addrb, dinb, web);
+        end if;
+      end if;
+    end process;
+  end generate gen_readfirst_b;
+  
+  gen_writefirst_b : if(WRITE_MODE_B = 0) generate
+    process (clkb, rstb)
+    begin
+      if rstb = '1' then
+        doutb <= (others => '0');
+      elsif rising_edge(clkb) then
+        if enb = '1' then
+          ram.SetBE_B(addrb, dinb, web);
+          doutb <= ram.Get_B(addrb);
+        end if;
+      end if;
+    end process;
+  end generate gen_writefirst_b;
+  
+  gen_nochange_b : if(WRITE_MODE_B = 2) generate
+    process (clkb, rstb)
+    begin
+      if rstb = '1' then
+          doutb <= (others => '0');
+      elsif rising_edge(clkb) then
+        if enb = '1' then
+          if(web = (web'range=> '0')) then
+            doutb <= ram.Get_B(addrb);
+          else
+            ram.SetBE_B(addrb, dinb, web);
+          end if;
+        end if;
+      end if;
+    end process;
+  end generate gen_nochange_b;
 
-    g_with_byte_enable         => false,
-    g_addr_conflict_resolution => "read_first",
-    g_init_file                => MEMORY_INIT_FILE,
-    g_fail_if_file_not_found   => false
-    )
-  port map(
-    rst_n_i => rst_n,
 
-    -- Port A
-    clka_i => clka,
-    bwea_i => (others => '0'), --wea,
-    wea_i  => wea_or,
-    aa_i   => addra,
-    da_i   => dina,
-    qa_o   => douta,
-    -- Port B
-
-    clkb_i => clkb,
-    bweb_i => (others => '0'), --web,
-    web_i  => web_or,
-    ab_i   => addrb,
-    db_i   => dinb,
-    qb_o   => doutb
-    );
     
     sbiterrb <= '0';
     dbiterrb <= '0';
+    sbiterra <= '0';
+    dbiterra <= '0';
 
 end rtl;

@@ -19,7 +19,7 @@ port(
     prc_wr_en  : in  std_logic;
     full       : in  std_logic;
     wr_en      : out std_logic;
-    wr_data    : out std_logic_vector(C_DIN_WIDTH-1 downto 0)
+    wr_data    : out std_logic_vector(C_DIN_WIDTH-1 downto 0) := (others => '0')
 );
 end xpm_fifo_gen_dgen;
 
@@ -56,10 +56,10 @@ architecture tb of xpm_fifo_gen_dgen is
   constant   WIDTH_RATIO  : integer := C_DOUT_WIDTH/C_DIN_WIDTH;
   constant   D_WIDTH_DIFF : integer := clog2(WIDTH_RATIO);
 
-  signal     wr_cntr   : std_logic_vector(D_WIDTH_DIFF-1 downto 0);
-  signal     pr_w_en   : std_logic;
-  signal     rand_num  : std_logic_vector(8*LOOP_COUNT-1 downto 0);
-  signal     wr_data_i : std_logic_vector(C_DATA_WIDTH-1 downto 0);
+  signal     wr_cntr   : std_logic_vector(D_WIDTH_DIFF-1 downto 0) := (others => '0');
+  signal     pr_w_en   : std_logic := '0';
+  signal     rand_num  : std_logic_vector(8*LOOP_COUNT-1 downto 0):= (others => '0');
+  signal     wr_data_i : std_logic_vector(C_DATA_WIDTH-1 downto 0):= (others => '0');
 
 begin
 

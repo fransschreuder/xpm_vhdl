@@ -2,7 +2,6 @@ library ieee;
 use ieee.std_logic_1164.all;
 library std;
 use std.env.all;
-use work.gencores_pkg.all;
 
 entity xpm_memory_spram is
   generic (
@@ -58,12 +57,39 @@ end xpm_memory_spram;
 
 architecture rtl of xpm_memory_spram is
   -- Define local parameters for mapping with base file
-  constant P_MEMORY_PRIMITIVE     : integer := 2; --block ram
-  constant P_CLOCKING_MODE        : integer := 1;
-  constant P_ECC_MODE             : integer := 0;
-  constant P_WAKEUP_TIME          : integer := 0;
-  constant P_WRITE_MODE_A         : integer := 1;
-  constant P_MEMORY_OPTIMIZATION  : integer := 0;
+  
+  function clog2(N : natural) return positive is
+  begin
+    if N <= 2 then
+      return 1;
+    elsif N mod 2 = 0 then
+      return 1 + clog2(N/2);
+    else
+      return 1 + clog2((N+1)/2);
+    end if;
+  end function;
+  
+  function P_MEMORY_PRIMITIVE return integer is begin
+    if    (MEMORY_PRIMITIVE = "lutram"    or  MEMORY_PRIMITIVE = "LUTRAM"  or  MEMORY_PRIMITIVE = "distributed"  or  MEMORY_PRIMITIVE = "DISTRIBUTED" ) then return 1;
+    elsif (MEMORY_PRIMITIVE = "blockram"  or  MEMORY_PRIMITIVE = "BLOCKRAM"  or  MEMORY_PRIMITIVE = "block"  or  MEMORY_PRIMITIVE = "BLOCK" ) then return 2;
+    elsif (MEMORY_PRIMITIVE = "ultraram"  or  MEMORY_PRIMITIVE = "ULTRARAM"  or  MEMORY_PRIMITIVE = "ultra"  or  MEMORY_PRIMITIVE = "ULTRA" ) then return 3; else return 0; end if; end function;
+  
+  constant P_CLOCKING_MODE : integer := 0;
+
+  function P_ECC_MODE return integer is begin
+    if    ( ECC_MODE  = "no_ecc"                  or  ECC_MODE  = "NO_ECC"                ) then return 0;
+    elsif ( ECC_MODE  = "encode_only"             or  ECC_MODE  = "ENCODE_ONLY"           ) then return 1;
+    elsif ( ECC_MODE  = "decode_only"             or  ECC_MODE  = "DECODE_ONLY"           ) then return 2;
+    elsif ( ECC_MODE  = "both_encode_and_decode"  or  ECC_MODE  = "BOTH_ENCODE_AND_DECODE") then return 3; else return 4; end if; end function;
+
+  function P_WAKEUP_TIME return integer is begin if (WAKEUP_TIME = "use_sleep_pin"     or  WAKEUP_TIME = "USE_SLEEP_PIN") then return 2; else return 0; end if; end function;
+
+  function P_WRITE_MODE_A  return integer is begin
+    if    ( WRITE_MODE_A = "write_first"  or  WRITE_MODE_A = "WRITE_FIRST") then return 0;
+    elsif ( WRITE_MODE_A = "read_first"   or  WRITE_MODE_A = "READ_FIRST" ) then return 1;
+    elsif ( WRITE_MODE_A = "no_change"    or  WRITE_MODE_A = "NO_CHANGE"  ) then return 2; else return 0; end if; end function;
+
+  function P_MEMORY_OPTIMIZATION return integer is begin if (MEMORY_OPTIMIZATION = "false") then return 0; else return 1; end if; end function;
 
 begin
   
@@ -76,7 +102,7 @@ begin
   generic map (
 
     -- Common module parameters
-    MEMORY_OPTIMIZATION      => MEMORY_OPTIMIZATION,
+    MEMORY_OPTIMIZATION      => P_MEMORY_OPTIMIZATION,
     MEMORY_TYPE        => 0,
     MEMORY_SIZE        => MEMORY_SIZE,
     MEMORY_PRIMITIVE   => P_MEMORY_PRIMITIVE,
@@ -108,7 +134,7 @@ begin
     WRITE_DATA_WIDTH_B => WRITE_DATA_WIDTH_A,
     READ_DATA_WIDTH_B  => READ_DATA_WIDTH_A,
     BYTE_WRITE_WIDTH_B => WRITE_DATA_WIDTH_A,
-    ADDR_WIDTH_B       => f_log2_ceil(MEMORY_SIZE/WRITE_DATA_WIDTH_A),
+    ADDR_WIDTH_B       => clog2(MEMORY_SIZE/WRITE_DATA_WIDTH_A),
     READ_RESET_VALUE_B => "0",
     READ_LATENCY_B     => READ_LATENCY_A,
     WRITE_MODE_B       => P_WRITE_MODE_A                        

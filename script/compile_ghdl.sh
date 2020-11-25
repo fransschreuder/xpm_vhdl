@@ -7,10 +7,6 @@ ghdl -a --work=xpm --std=08 ../src/xpm/xpm_cdc/hdl/xpm_cdc_handshake.vhd
 ghdl -a --work=xpm --std=08 ../src/xpm/xpm_cdc/hdl/xpm_cdc_low_latency_handshake.vhd
 ghdl -a --work=xpm --std=08 ../src/xpm/xpm_cdc/hdl/xpm_cdc_pulse.vhd
 ghdl -a --work=xpm --std=08 ../src/xpm/xpm_cdc/hdl/xpm_cdc_sync_rst.vhd
-ghdl -a --work=xpm --std=08 ../src/xpm/xpm_memory/hdl/gencores_pkg.vhd
-ghdl -a --work=xpm --std=08 ../src/xpm/xpm_memory/hdl/genram_pkg.vhd
-ghdl -a --work=xpm --std=08 ../src/xpm/xpm_memory/hdl/memory_loader_pkg.vhd
-ghdl -a --work=xpm --std=08 ../src/xpm/xpm_memory/hdl/generic_dpram_dualclock.vhd
 ghdl -a --work=xpm --std=08 ../src/xpm/xpm_memory/hdl/xpm_memory_base.vhd
 ghdl -a --work=xpm --std=08 ../src/xpm/xpm_memory/hdl/xpm_memory_dpdistram.vhd
 ghdl -a --work=xpm --std=08 ../src/xpm/xpm_memory/hdl/xpm_memory_dprom.vhd
@@ -25,9 +21,9 @@ ghdl -a --work=xpm --std=08 ../src/xpm/xpm_fifo/hdl/xpm_fifo_reg_vec.vhd
 ghdl -a --work=xpm --std=08 ../src/xpm/xpm_fifo/hdl/xpm_reg_pipe_bit.vhd
 ghdl -a --work=xpm --std=08 ../src/xpm/xpm_fifo/hdl/xpm_fifo_base.vhd
 ghdl -a --work=xpm --std=08 ../src/xpm/xpm_fifo/hdl/xpm_fifo_async.vhd
+ghdl -a --work=xpm --std=08 ../src/xpm/xpm_fifo/hdl/xpm_fifo_axi_reg_slice.vhd
 ghdl -a --work=xpm --std=08 ../src/xpm/xpm_fifo/hdl/xpm_fifo_axif.vhd
 ghdl -a --work=xpm --std=08 ../src/xpm/xpm_fifo/hdl/xpm_fifo_axil.vhd
-ghdl -a --work=xpm --std=08 ../src/xpm/xpm_fifo/hdl/xpm_fifo_axi_reg_slice.vhd
 ghdl -a --work=xpm --std=08 ../src/xpm/xpm_fifo/hdl/xpm_fifo_axis.vhd
 ghdl -a --work=xpm --std=08 ../src/xpm/xpm_fifo/hdl/xpm_fifo_sync.vhd
 ghdl -a --work=xpm --std=08 ../src/xpm/xpm_fifo/simulation/xpm_fifo_gen_rng.vhd
@@ -37,5 +33,5 @@ ghdl -a --work=xpm --std=08 ../src/xpm/xpm_fifo/simulation/xpm_fifo_gen_pctrl.vh
 ghdl -a --work=xpm --std=08 ../src/xpm/xpm_fifo/simulation/xpm_fifo_ex.vhd
 ghdl -a --work=xpm --std=08 ../src/xpm/xpm_fifo/simulation/xpm_fifo_tb.vhd
 ghdl -e --work=xpm --std=08 xpm_fifo_tb
-ghdl -r --work=xpm --std=08 xpm_fifo_tb --max-stack-alloc=0 --wave=xpm_fifo_tb.ghw
+ghdl -r --work=xpm --std=08 xpm_fifo_tb --max-stack-alloc=0 --ieee-asserts=disable-at-0 --wave=xpm_fifo_tb.ghw
 gtkwave xpm_fifo_tb.ghw
