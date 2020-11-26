@@ -16,6 +16,8 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std_unsigned.all;
 library std;
 use std.env.all;
+library xpm;
+use xpm.vcomponents.all;
 
 entity xpm_fifo_ex is 
 generic(
@@ -127,7 +129,7 @@ begin
 
 
     gen_xpm_fifo_sync: if (CLOCK_DOMAIN = "COMMON") generate
-      xpm_fifo_sync_inst: entity work.xpm_fifo_sync 
+      xpm_fifo_sync_inst: xpm_fifo_sync 
       generic map (
         FIFO_MEMORY_TYPE    => FIFO_MEMORY_TYPE   ,
         ECC_MODE            => ECC_MODE           ,
@@ -170,7 +172,7 @@ begin
     end generate gen_xpm_fifo_sync;
 
     gen_xpm_fifo_async: if (CLOCK_DOMAIN = "INDEPENDENT") generate
-      xpm_fifo_async_inst: entity work.xpm_fifo_async 
+      xpm_fifo_async_inst: xpm_fifo_async 
       generic map(
         FIFO_MEMORY_TYPE    => FIFO_MEMORY_TYPE  ,
         ECC_MODE            => ECC_MODE          ,

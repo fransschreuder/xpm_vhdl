@@ -30,3 +30,18 @@ ghdl -a --work=xpm --std=08 ${XPM_TOP_DIR}/src/xpm/xpm_fifo/hdl/xpm_fifo_axif.vh
 ghdl -a --work=xpm --std=08 ${XPM_TOP_DIR}/src/xpm/xpm_fifo/hdl/xpm_fifo_axil.vhd
 ghdl -a --work=xpm --std=08 ${XPM_TOP_DIR}/src/xpm/xpm_fifo/hdl/xpm_fifo_axis.vhd
 ghdl -a --work=xpm --std=08 ${XPM_TOP_DIR}/src/xpm/xpm_fifo/hdl/xpm_fifo_sync.vhd
+ghdl -a --work=work --std=08 ${XPM_TOP_DIR}/src/xpm/xpm_fifo/simulation/xpm_fifo_gen_rng.vhd
+ghdl -a --work=work --std=08 ${XPM_TOP_DIR}/src/xpm/xpm_fifo/simulation/xpm_fifo_gen_dgen.vhd
+ghdl -a --work=work --std=08 ${XPM_TOP_DIR}/src/xpm/xpm_fifo/simulation/xpm_fifo_gen_dverif.vhd
+ghdl -a --work=work --std=08 ${XPM_TOP_DIR}/src/xpm/xpm_fifo/simulation/xpm_fifo_gen_pctrl.vhd
+ghdl -a --work=work --std=08 ${XPM_TOP_DIR}/src/xpm/xpm_fifo/simulation/xpm_fifo_ex.vhd
+ghdl -a --work=work --std=08 ${XPM_TOP_DIR}/src/xpm/xpm_fifo/simulation/xpm_fifo_tb.vhd
+ghdl -e --work=work --std=08 xpm_fifo_tb
+ghdl -r --work=work --std=08 xpm_fifo_tb --max-stack-alloc=0 --ieee-asserts=disable-at-0 --wave=xpm_fifo_tb.ghw
+if xhost >& /dev/null ; then 
+	gtkwave xpm_fifo_tb.ghw
+else 
+	echo "Display invalid" 
+fi
+
+
