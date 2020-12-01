@@ -243,7 +243,7 @@ architecture rtl of xpm_memory_base is
         tmp := V(to_integer(unsigned(Index))*WRITE_DATA_WIDTH_A+WRITE_DATA_WIDTH_A-1 downto to_integer(unsigned(Index))*WRITE_DATA_WIDTH_A);
         for i in 0 to c_num_bytes_a-1 loop
           if BE(i) = '1' then
-            tmp((i+1)*c_num_bytes_a-1 downto i*8) := Data((i+1)*c_num_bytes_a-1 downto i*8);
+            tmp((i+1)*BYTE_WRITE_WIDTH_A-1 downto i*BYTE_WRITE_WIDTH_A) := Data((i+1)*BYTE_WRITE_WIDTH_A-1 downto i*BYTE_WRITE_WIDTH_A);
           end if;
         end loop;
         
@@ -262,7 +262,7 @@ architecture rtl of xpm_memory_base is
         tmp := V(to_integer(unsigned(Index))*WRITE_DATA_WIDTH_B+WRITE_DATA_WIDTH_B-1 downto to_integer(unsigned(Index))*WRITE_DATA_WIDTH_B);
         for i in 0 to c_num_bytes_b-1 loop
           if BE(i) = '1' then
-            tmp((i+1)*c_num_bytes_b-1 downto i*8) := Data((i+1)*c_num_bytes_a-1 downto i*8);
+            tmp((i+1)*BYTE_WRITE_WIDTH_B-1 downto i*BYTE_WRITE_WIDTH_B) := Data((i+1)*BYTE_WRITE_WIDTH_B-1 downto i*BYTE_WRITE_WIDTH_B);
           end if;
         end loop;
         
