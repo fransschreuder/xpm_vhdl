@@ -430,7 +430,7 @@ begin
         wr_en            => s_axis_tvalid,
         din              => axis_din,
         full             => open,
-        full_n           => s_axis_tready,
+        full_n           => s_axis_tready_s,
         prog_full        => prog_full_axis,
         wr_data_count    => wr_data_count_axis,
         overflow         => open,
