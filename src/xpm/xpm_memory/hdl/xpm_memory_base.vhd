@@ -105,7 +105,8 @@ architecture rtl of xpm_memory_base is
     constant c_num_bytes_a : integer := (WRITE_DATA_WIDTH_A / BYTE_WRITE_WIDTH_A);
     constant c_num_bytes_b : integer := (WRITE_DATA_WIDTH_B / BYTE_WRITE_WIDTH_B);
     
-    
+    signal douta_i        : std_logic_vector(READ_DATA_WIDTH_A-1 downto 0) := (others => '0');
+    signal doutb_i        : std_logic_vector(READ_DATA_WIDTH_B-1 downto 0) := (others => '0');
   
   function clog2(N : natural) return positive is
   begin
@@ -273,7 +274,11 @@ architecture rtl of xpm_memory_base is
   end protected body T;
   
   shared variable ram: T;
-    
+  type slv_rwa_array is array(0 to READ_LATENCY_A) of std_logic_vector(READ_DATA_WIDTH_A-1 downto 0);
+  type slv_rwb_array is array(0 to READ_LATENCY_B) of std_logic_vector(READ_DATA_WIDTH_B-1 downto 0);
+  
+  signal output_reg_a: slv_rwa_array;
+  signal output_reg_b: slv_rwb_array;
     
 begin
 
@@ -285,10 +290,10 @@ begin
     process (clka, rsta)
     begin
       if rsta = '1' then
-        douta <= (others => '0');
+        douta_i <= (others => '0');
       elsif rising_edge(clka) then
         if ena = '1' then
-          douta <= ram.Get_A(addra);
+          douta_i <= ram.Get_A(addra);
           ram.SetBE_A(addra, dina, wea);
         end if;
       end if;
@@ -299,11 +304,11 @@ begin
     process (clka, rsta)
     begin
       if rsta = '1' then
-        douta <= (others => '0');
+        douta_i <= (others => '0');
       elsif rising_edge(clka) then
         if ena = '1' then
           ram.SetBE_A(addra, dina, wea);
-          douta <= ram.Get_A(addra);
+          douta_i <= ram.Get_A(addra);
         end if;
       end if;
     end process;
@@ -313,11 +318,11 @@ begin
     process (clka, rsta)
     begin
       if rsta = '1' then
-        douta <= (others => '0');
+        douta_i <= (others => '0');
       elsif rising_edge(clka) then
         if ena = '1' then
           if(wea = (wea'range=> '0')) then
-            douta <= ram.Get_A(addra);
+            douta_i <= ram.Get_A(addra);
           else
             ram.SetBE_A(addra, dina, wea);
           end if;
@@ -331,10 +336,10 @@ begin
     process (clkb, rstb)
     begin
       if rstb = '1' then
-        doutb <= (others => '0');
+        doutb_i <= (others => '0');
       elsif rising_edge(clkb) then
         if enb = '1' then
-          doutb <= ram.Get_B(addrb);
+          doutb_i <= ram.Get_B(addrb);
           ram.SetBE_B(addrb, dinb, web);
         end if;
       end if;
@@ -345,11 +350,11 @@ begin
     process (clkb, rstb)
     begin
       if rstb = '1' then
-        doutb <= (others => '0');
+        doutb_i <= (others => '0');
       elsif rising_edge(clkb) then
         if enb = '1' then
           ram.SetBE_B(addrb, dinb, web);
-          doutb <= ram.Get_B(addrb);
+          doutb_i <= ram.Get_B(addrb);
         end if;
       end if;
     end process;
@@ -359,11 +364,11 @@ begin
     process (clkb, rstb)
     begin
       if rstb = '1' then
-          doutb <= (others => '0');
+          doutb_i <= (others => '0');
       elsif rising_edge(clkb) then
         if enb = '1' then
           if(web = (web'range=> '0')) then
-            doutb <= ram.Get_B(addrb);
+            doutb_i <= ram.Get_B(addrb);
           else
             ram.SetBE_B(addrb, dinb, web);
           end if;
@@ -372,7 +377,55 @@ begin
     end process;
   end generate gen_nochange_b;
 
+    output_reg_b_proc: process(clkb, rstb)
+    begin
+        if rstb = '1' then
+            for i in 2 to READ_LATENCY_B loop
+                if(READ_RESET_VALUE_B = "1") then
+                    output_reg_b(i) <= (others => '1');
+                else
+                    output_reg_b(i) <= (others => '0');
+                end if;
+            end loop;
+        elsif rising_edge(clkb) then
+            if regceb = '1' then
+                for i in 2 to READ_LATENCY_B loop
+                    if i = 2 then
+                        output_reg_b(i) <= doutb_i;
+                    else
+                        output_reg_b(i) <= output_reg_b(i-1);
+                    end if;
+                end loop;
+            end if;
+        end if;
+    end process;
+    doutb <= output_reg_b(READ_LATENCY_B);
+    
+    output_reg_a_proc: process(clka, rsta)
+    begin
+        if rsta = '1' then
+            for i in 2 to READ_LATENCY_A loop
+                if(READ_RESET_VALUE_A = "1") then
+                    output_reg_a(i) <= (others => '1');
+                else
+                    output_reg_a(i) <= (others => '0');
+                end if;
+            end loop;
+        elsif rising_edge(clka) then
+            if regcea = '1' then
+                for i in 2 to READ_LATENCY_A loop
+                    if i = 2 then
+                        output_reg_a(i) <= douta_i;
+                    else
+                        output_reg_a(i) <= output_reg_a(i-1);
+                    end if;
+                end loop;
+            end if;
+        end if;
+    end process;
+    douta <= output_reg_a(READ_LATENCY_A);
 
+    
     
     sbiterrb <= '0';
     dbiterrb <= '0';
