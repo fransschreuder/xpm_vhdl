@@ -376,7 +376,10 @@ begin
       end if;
     end process;
   end generate gen_nochange_b;
-
+  g_latb_1: if READ_LATENCY_B < 2 generate
+    output_reg_b(READ_LATENCY_B) <= doutb_i;
+  end generate;
+  g_latb_2: if READ_LATENCY_B >= 2 generate
     output_reg_b_proc: process(clkb, rstb)
     begin
         if rstb = '1' then
@@ -399,8 +402,14 @@ begin
             end if;
         end if;
     end process;
+  end generate;
     doutb <= output_reg_b(READ_LATENCY_B);
-    
+  
+  g_lata_1: if READ_LATENCY_A < 2 generate
+    output_reg_a(READ_LATENCY_A) <= douta_i;
+  end generate;
+  g_lata_2: if READ_LATENCY_A >= 2 generate
+  
     output_reg_a_proc: process(clka, rsta)
     begin
         if rsta = '1' then
@@ -423,6 +432,7 @@ begin
             end if;
         end if;
     end process;
+  end generate;
     douta <= output_reg_a(READ_LATENCY_A);
 
     
