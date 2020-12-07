@@ -6,17 +6,19 @@ Xilinx has provided a very convenient library with Vivado called XPM. The librar
 
 The XPM VHDL library needs to be compiled with the VHDL-2008 standard.
 
-## Compilation (GHDL)
+## Compilation (GHDL/Vunit)
 
 In order to compile the library and run the testbench, a script was included.
 
 Dependencies:
 * GHDL
 * GtkWave
+* VUnit
+* Python3
 
 ```
 cd script
-./compile_ghdl.sh
+./run_vunit.py
 ```
 
 ## Synthesis

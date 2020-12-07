@@ -11,6 +11,8 @@
 --!   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 --!   See the License for the specific language governing permissions and
 --!   limitations under the License.
+library vunit_lib;
+context vunit_lib.vunit_context;
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std_unsigned.all;
@@ -20,6 +22,7 @@ library xpm;
 use xpm.vcomponents.all;
 --
 entity xpm_fifo_axis_tb is
+  generic(runner_cfg : string := runner_cfg_default);
 end xpm_fifo_axis_tb;
 
 architecture tb of xpm_fifo_axis_tb is
@@ -100,13 +103,13 @@ begin
 
     process
     begin
+        test_runner_setup(runner, runner_cfg);
         wait until(sim_done = '1');
-        if simulation_success= '0' then
-            report("xpm_fifo_axis_tb: Simulation failed") severity error;
-        else 
+        assert simulation_success= '1' report("xpm_fifo_axis_tb: Simulation failed");
+        if simulation_success = '1' then
             report("xpm_fifo_axis_tb: Test Completed Successfully") severity note;
         end if;
-        std.env.finish;
+        test_runner_cleanup(runner);
         wait;
     end process;
 
@@ -114,7 +117,7 @@ begin
     begin
     wait for 900 ms;
     report("Test bench timed out") severity warning;
-    std.env.finish(1);
+    test_runner_cleanup(runner);
     wait;
     end process;
 
