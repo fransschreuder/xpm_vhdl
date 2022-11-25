@@ -224,21 +224,21 @@ architecture rtl of xpm_memory_base is
   end f_is_synthesis;
 
   type T is protected
-    impure function Get_A(Index: std_logic_vector(clog2(MEMORY_SIZE/READ_DATA_WIDTH_A)-1 downto 0)) return std_logic_vector;
-    procedure SetBE_A (Index: std_logic_vector(clog2(MEMORY_SIZE/WRITE_DATA_WIDTH_A)-1 downto 0); Data: std_logic_vector(WRITE_DATA_WIDTH_A-1 downto 0); BE : std_logic_vector(c_num_bytes_a-1 downto 0));
-    impure function Get_B(Index: std_logic_vector(clog2(MEMORY_SIZE/READ_DATA_WIDTH_B)-1 downto 0)) return std_logic_vector;
-    procedure SetBE_B (Index: std_logic_vector(clog2(MEMORY_SIZE/WRITE_DATA_WIDTH_B)-1 downto 0); Data: std_logic_vector(WRITE_DATA_WIDTH_B-1 downto 0); BE : std_logic_vector(c_num_bytes_b-1 downto 0));
+    impure function Get_A(Index: std_logic_vector(ADDR_WIDTH_A-1 downto 0)) return std_logic_vector;
+    procedure SetBE_A (Index: std_logic_vector(ADDR_WIDTH_A-1 downto 0); Data: std_logic_vector(WRITE_DATA_WIDTH_A-1 downto 0); BE : std_logic_vector(c_num_bytes_a-1 downto 0));
+    impure function Get_B(Index: std_logic_vector(ADDR_WIDTH_B-1 downto 0)) return std_logic_vector;
+    procedure SetBE_B (Index: std_logic_vector(ADDR_WIDTH_B-1 downto 0); Data: std_logic_vector(WRITE_DATA_WIDTH_B-1 downto 0); BE : std_logic_vector(c_num_bytes_b-1 downto 0));
   end protected T;
 
   type T is protected body
     variable V : std_logic_vector(MEMORY_SIZE-1 downto 0) := f_file_to_ramtype;
     
-    impure function Get_A(Index: std_logic_vector(clog2(MEMORY_SIZE/READ_DATA_WIDTH_A)-1 downto 0)) return std_logic_vector is
+    impure function Get_A(Index: std_logic_vector(ADDR_WIDTH_A-1 downto 0)) return std_logic_vector is
     begin
         return V(to_integer(unsigned(Index))*READ_DATA_WIDTH_A+READ_DATA_WIDTH_A-1 downto to_integer(unsigned(Index))*READ_DATA_WIDTH_A);
     end function;
     
-    procedure SetBE_A (Index: std_logic_vector(clog2(MEMORY_SIZE/WRITE_DATA_WIDTH_A)-1 downto 0); Data: std_logic_vector(WRITE_DATA_WIDTH_A-1 downto 0); BE : std_logic_vector(c_num_bytes_a-1 downto 0)) is
+    procedure SetBE_A (Index: std_logic_vector(ADDR_WIDTH_A-1 downto 0); Data: std_logic_vector(WRITE_DATA_WIDTH_A-1 downto 0); BE : std_logic_vector(c_num_bytes_a-1 downto 0)) is
       variable tmp: std_logic_vector(WRITE_DATA_WIDTH_A-1 downto 0);
     begin
         tmp := V(to_integer(unsigned(Index))*WRITE_DATA_WIDTH_A+WRITE_DATA_WIDTH_A-1 downto to_integer(unsigned(Index))*WRITE_DATA_WIDTH_A);
@@ -252,12 +252,12 @@ architecture rtl of xpm_memory_base is
         
     end procedure;
     
-    impure function Get_B(Index: std_logic_vector(clog2(MEMORY_SIZE/READ_DATA_WIDTH_B)-1 downto 0)) return std_logic_vector is
+    impure function Get_B(Index: std_logic_vector(ADDR_WIDTH_B-1 downto 0)) return std_logic_vector is
     begin
         return V(to_integer(unsigned(Index))*READ_DATA_WIDTH_B+READ_DATA_WIDTH_B-1 downto to_integer(unsigned(Index))*READ_DATA_WIDTH_B);
     end function;
     
-    procedure SetBE_B (Index: std_logic_vector(clog2(MEMORY_SIZE/WRITE_DATA_WIDTH_B)-1 downto 0); Data: std_logic_vector(WRITE_DATA_WIDTH_B-1 downto 0); BE : std_logic_vector(c_num_bytes_b-1 downto 0)) is
+    procedure SetBE_B (Index: std_logic_vector(ADDR_WIDTH_B-1 downto 0); Data: std_logic_vector(WRITE_DATA_WIDTH_B-1 downto 0); BE : std_logic_vector(c_num_bytes_b-1 downto 0)) is
       variable tmp: std_logic_vector(WRITE_DATA_WIDTH_B-1 downto 0);
     begin
         tmp := V(to_integer(unsigned(Index))*WRITE_DATA_WIDTH_B+WRITE_DATA_WIDTH_B-1 downto to_integer(unsigned(Index))*WRITE_DATA_WIDTH_B);
