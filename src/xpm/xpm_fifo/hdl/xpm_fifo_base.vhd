@@ -815,7 +815,7 @@ begin --architecture rtl
   end generate gen_cdc_pntr;
 
   gen_pntr_pf_rc: if (RELATED_CLOCKS = 1) generate
-    signal rd_pntr_wr_dc_in: std_logic_vector(RD_PNTR_WIDTH-1 downto 0);
+    signal rd_pntr_wr_dc_in: std_logic_vector(RD_PNTR_WIDTH downto 0);
   begin
     rpw_rc_reg: entity work.xpm_fifo_reg_vec 
       generic map(RD_PNTR_WIDTH)
@@ -830,7 +830,7 @@ begin --architecture rtl
       port map(rd_rst_i, rd_clk, wr_pntr_ext, wr_pntr_rd_dc);
 
 
-    
+
     rd_pntr_wr_dc_in <= (rd_pntr_ext-extra_words_fwft);
     rpw_rc_reg_dc: entity work.xpm_fifo_reg_vec 
       generic map(RD_PNTR_WIDTH+1)
