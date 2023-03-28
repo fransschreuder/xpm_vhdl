@@ -161,8 +161,8 @@ architecture rtl of xpm_memory_base is
     if f_empty_file_name(file_name) then
       return mem;
     end if;
-
     file_open(status, f_in, file_name, read_mode);
+    
 
     f_file_open_check (file_name, status, fail_if_notfound);
 
@@ -170,7 +170,7 @@ architecture rtl of xpm_memory_base is
       if not endfile(f_in) then
         readline (f_in, l);
         -- read function gives us bit_vector
-        read (l, tmp_bv);
+        hread (l, tmp_bv);
       else
         tmp_bv := (others => '0');
       end if;
