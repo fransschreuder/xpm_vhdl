@@ -1083,7 +1083,7 @@ begin --architecture rtl
        going_aempty    <= '1' when ((wr_pntr_rd_adj = rd_pntr_plus2) and ram_wr_en_i = '0' and ram_rd_en_i = '1') else '0';
        leaving_aempty  <= '1' when (((wr_pntr_rd_adj = rd_pntr) or (wr_pntr_rd_adj = rd_pntr_plus1) or (wr_pntr_rd_adj = rd_pntr_plus2)) and ram_wr_en_i = '1') else '0';
   
-       going_full      <= '1' when ((rd_pntr_wr_adj = wr_pntr_plus1) and (ram_rd_en_i and wrp_lt_rdp_and_red) = '1' and ram_wr_en_i = '1') else '0';
+       going_full      <= '1' when ((rd_pntr_wr_adj = wr_pntr_plus1) and (ram_rd_en_i and wrp_lt_rdp_and_red) = '0' and ram_wr_en_i = '1') else '0';
        leaving_full    <= '1' when ((rd_pntr_wr_adj = wr_pntr) and (ram_rd_en_i = '1' and wrp_lt_rdp_and_red = '1')) else '0';
        going_afull     <= '1' when ((rd_pntr_wr_adj = wr_pntr_plus2) and (ram_rd_en_i and wrp_lt_rdp_and_red) = '0' and ram_wr_en_i = '1') else '0';
        leaving_afull   <= '1' when ((rd_pntr_wr_adj = wr_pntr_plus1) and ram_wr_en_i = '0' and (ram_rd_en_i and wrp_lt_rdp_and_red) = '1') else '0';
