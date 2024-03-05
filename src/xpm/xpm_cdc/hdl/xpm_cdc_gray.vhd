@@ -106,10 +106,10 @@ begin
   begin
     if rising_edge(dest_clk) then
       dest_graysync_ff(0) <= async_path;
+      for syncstage in 1 to DEST_SYNC_FF-1 loop
+        dest_graysync_ff(syncstage) <= dest_graysync_ff (syncstage-1);
+      end loop;
     end if;
-    for syncstage in 1 to DEST_SYNC_FF-1 loop
-      dest_graysync_ff(syncstage) <= dest_graysync_ff (syncstage-1);
-    end loop;
   end process;
   
   async_path <= src_gray_ff;
