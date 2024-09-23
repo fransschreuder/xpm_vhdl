@@ -1576,7 +1576,7 @@ begin --architecture rtl
         count_down <= '0';
      end if;
      count_en   <= count_up or count_down;
-     count_rst  <= (rd_rst_i or (not (or curr_fwft_state) and not (and next_fwft_state)));
+     count_rst  <= (rd_rst_i or (not (or curr_fwft_state) and not (or next_fwft_state)));
     end process;
     rdpp1_inst0: entity work.xpm_counter_updn 
     generic map(2, 0)
