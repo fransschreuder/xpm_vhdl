@@ -93,10 +93,12 @@ begin
   -- Instantiate Xilinx Asynchronous Clear Registerprocess(dest_clk)
   process(dest_clk, reset_pol)
   begin
-    if reset_pol = '1' then
+    if rising_edge(dest_clk) or rising_edge(reset_pol) then
+      if reset_pol = '1' then
         arststages_ff <= (others => INV_DEF_VAL);
-    elsif rising_edge(dest_clk) then
+      else
         arststages_ff <= arststages_ff(DEST_SYNC_FF-2 downto 0) & async_path_bit;
+      end if;
     end if;
   end process;
   
