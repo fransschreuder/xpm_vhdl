@@ -154,7 +154,7 @@ component xpm_memory_tdpram
     SIM_ASSERT_CHK          : integer := 0               ;
     WRITE_PROTECT           : integer := 1               ;
     RAM_DECOMP              : string  := "auto"          ;
-    IGNORE_INIT_SYNTH       : integer := 0							 ;
+    IGNORE_INIT_SYNTH       : integer := 0               ;
 
     -- Port A module generics
     WRITE_DATA_WIDTH_A : integer := 32          ;
