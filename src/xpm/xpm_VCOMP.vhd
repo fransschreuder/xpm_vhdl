@@ -139,6 +139,8 @@ component xpm_memory_tdpram
     MEMORY_PRIMITIVE        : string  := "auto"         ;
     CLOCKING_MODE           : string  := "common_clock" ;
     ECC_MODE                : string  := "no_ecc"       ;
+    ECC_TYPE                : string  := "none"         ;
+    ECC_BIT_RANGE           : string  := "[7:0]"        ;
     MEMORY_INIT_FILE        : string  := "none"         ;
     MEMORY_INIT_PARAM       : string  := ""             ;
     USE_MEM_INIT            : integer := 1              ;
@@ -151,6 +153,8 @@ component xpm_memory_tdpram
     CASCADE_HEIGHT          : integer := 0               ;
     SIM_ASSERT_CHK          : integer := 0               ;
     WRITE_PROTECT           : integer := 1               ;
+    RAM_DECOMP              : string  := "auto"          ;
+    IGNORE_INIT_SYNTH       : integer := 0							 ;
 
     -- Port A module generics
     WRITE_DATA_WIDTH_A : integer := 32          ;
