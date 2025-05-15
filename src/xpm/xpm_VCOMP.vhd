@@ -73,6 +73,8 @@ component xpm_memory_sdpram
     MEMORY_PRIMITIVE        : string  := "auto"         ;
     CLOCKING_MODE           : string  := "common_clock" ;
     ECC_MODE                : string  := "no_ecc"       ;
+    ECC_TYPE                : string  := "none"         ;
+    ECC_BIT_RANGE           : string  := "7:0"          ;
     MEMORY_INIT_FILE        : string  := "none"         ;
     MEMORY_INIT_PARAM       : string  := ""             ;
     USE_MEM_INIT            : integer := 1              ;
@@ -766,13 +768,13 @@ component xpm_fifo_axif
     s_axi_awlock                : in  std_logic_vector(2-1 downto 0);
     s_axi_awcache               : in  std_logic_vector(4-1 downto 0);
     s_axi_awprot                : in  std_logic_vector(3-1 downto 0);
-    s_axi_awqos                 : in  std_logic_vector(4-1 downto 0); 
+    s_axi_awqos                 : in  std_logic_vector(4-1 downto 0);
     s_axi_awregion              : in  std_logic_vector(4-1 downto 0);
     s_axi_awuser                : in  std_logic_vector(AXI_AWUSER_WIDTH-1 downto 0);
     s_axi_awvalid               : in  std_logic;
     s_axi_awready               : out std_logic;
     s_axi_wdata                 : in  std_logic_vector(AXI_DATA_WIDTH-1 downto 0);
-    s_axi_wstrb                 : in  std_logic_vector(AXI_DATA_WIDTH/8-1 downto 0); 
+    s_axi_wstrb                 : in  std_logic_vector(AXI_DATA_WIDTH/8-1 downto 0);
     s_axi_wlast                 : in  std_logic;
     s_axi_wuser                 : in  std_logic_vector(AXI_WUSER_WIDTH-1 downto 0);
     s_axi_wvalid                : in  std_logic;
@@ -826,7 +828,7 @@ component xpm_fifo_axif
     s_axi_ruser                 : out std_logic_vector(AXI_RUSER_WIDTH-1 downto 0);
     s_axi_rvalid                : out std_logic;
     s_axi_rready                : in  std_logic;
-    m_axi_arid                  : out std_logic_vector(AXI_ID_WIDTH-1 downto 0);       
+    m_axi_arid                  : out std_logic_vector(AXI_ID_WIDTH-1 downto 0);
     m_axi_araddr                : out std_logic_vector(AXI_ADDR_WIDTH-1 downto 0);
     m_axi_arlen                 : out std_logic_vector(AXI_LEN_WIDTH-1 downto 0);
     m_axi_arsize                : out std_logic_vector(3-1 downto 0);
@@ -839,7 +841,7 @@ component xpm_fifo_axif
     m_axi_aruser                : out std_logic_vector(AXI_ARUSER_WIDTH-1 downto 0);
     m_axi_arvalid               : out std_logic;
     m_axi_arready               : in  std_logic;
-    m_axi_rid                   : in  std_logic_vector(AXI_ID_WIDTH-1 downto 0);     
+    m_axi_rid                   : in  std_logic_vector(AXI_ID_WIDTH-1 downto 0);
     m_axi_rdata                 : in  std_logic_vector(AXI_DATA_WIDTH-1 downto 0);
     m_axi_rresp                 : in  std_logic_vector(2-1 downto 0);
     m_axi_rlast                 : in  std_logic;
@@ -908,7 +910,7 @@ component xpm_fifo_axil
     s_axi_awvalid               : in  std_logic;
     s_axi_awready               : out std_logic;
     s_axi_wdata                 : in  std_logic_vector(AXI_DATA_WIDTH-1 downto 0);
-    s_axi_wstrb                 : in  std_logic_vector(AXI_DATA_WIDTH/8-1 downto 0); 
+    s_axi_wstrb                 : in  std_logic_vector(AXI_DATA_WIDTH/8-1 downto 0);
     s_axi_wvalid                : in  std_logic;
     s_axi_wready                : out std_logic;
     s_axi_bresp                 : out std_logic_vector(2-1 downto 0);
@@ -932,11 +934,11 @@ component xpm_fifo_axil
     s_axi_rdata                 : out std_logic_vector(AXI_DATA_WIDTH-1 downto 0);
     s_axi_rresp                 : out std_logic_vector(2-1 downto 0);
     s_axi_rvalid                : out std_logic;
-    s_axi_rready                : in  std_logic;		
+    s_axi_rready                : in  std_logic;
     m_axi_araddr                : out std_logic_vector(AXI_ADDR_WIDTH-1 downto 0);
     m_axi_arprot                : out std_logic_vector(3-1 downto 0);
     m_axi_arvalid               : out std_logic;
-    m_axi_arready               : in  std_logic;   
+    m_axi_arready               : in  std_logic;
     m_axi_rdata                 : in  std_logic_vector(AXI_DATA_WIDTH-1 downto 0);
     m_axi_rresp                 : in  std_logic_vector(2-1 downto 0);
     m_axi_rvalid                : in  std_logic;
@@ -962,5 +964,3 @@ end component;
 
 
 end VCOMPONENTS;
-
-
