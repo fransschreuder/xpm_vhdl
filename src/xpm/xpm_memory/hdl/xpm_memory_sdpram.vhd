@@ -24,6 +24,8 @@ entity xpm_memory_sdpram is
     MEMORY_PRIMITIVE        : string  := "auto"         ;
     CLOCKING_MODE           : string  := "common_clock" ;
     ECC_MODE                : string  := "no_ecc"       ;
+    ECC_TYPE                : string  := "none"         ;
+    ECC_BIT_RANGE           : string  := "7:0"          ;
     MEMORY_INIT_FILE        : string  := "none"         ;
     MEMORY_INIT_PARAM       : string  := ""             ;
     USE_MEM_INIT            : integer := 1              ;
