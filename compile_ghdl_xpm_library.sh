@@ -1,7 +1,28 @@
 #!/bin/bash
-export XPM_TOP_DIR=$( dirname "${BASH_SOURCE[0]}" )/..
-echo $XPM_TOP_DIR
-export XPM_LIB_WORK_DIR=$( dirname `which vivado` )/../data/vhdl/ghdl/xilinx-vivado/xpm/v08
+
+export XPM_TOP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+echo "$XPM_TOP_DIR"
+
+read -p "Do you want to use this library without Vivado (for Cocotb simulations, etc.)? [Y/n]: " use_without_vivado
+use_without_vivado=${use_without_vivado:-Y}
+
+if [[ "$use_without_vivado" =~ ^[Nn]$ ]]; then
+    if ! command -v vivado &> /dev/null; then
+        echo "Error: Vivado not found in PATH. Please add Vivado to your PATH or use library without Vivado."
+        exit 1
+    fi
+    
+    vivado_path=$(dirname "$(which vivado)")
+    if [ $? -ne 0 ]; then
+        echo "Error: Could not determine Vivado path."
+        exit 1
+    fi
+    
+    export XPM_LIB_WORK_DIR="${vivado_path}/../data/vhdl/ghdl/xilinx-vivado/xpm/v08"
+else
+    export XPM_LIB_WORK_DIR="${XPM_TOP_DIR}/compiled_libs/xpm"
+fi
+
 echo $XPM_LIB_WORK_DIR
 
 mkdir -p $XPM_LIB_WORK_DIR
@@ -35,3 +56,13 @@ ghdl -a --work=xpm --workdir=${XPM_LIB_WORK_DIR} --std=08 ${XPM_TOP_DIR}/src/xpm
 ghdl -a --work=xpm --workdir=${XPM_LIB_WORK_DIR} --std=08 ${XPM_TOP_DIR}/src/xpm/xpm_fifo/hdl/xpm_fifo_axil.vhd
 ghdl -a --work=xpm --workdir=${XPM_LIB_WORK_DIR} --std=08 ${XPM_TOP_DIR}/src/xpm/xpm_fifo/hdl/xpm_fifo_axis.vhd
 ghdl -a --work=xpm --workdir=${XPM_LIB_WORK_DIR} --std=08 ${XPM_TOP_DIR}/src/xpm/xpm_fifo/hdl/xpm_fifo_sync.vhd
+
+# exit on any of the above commands fails
+if [ $? -ne 0 ]; then
+    echo "Error: Failed to compile xpm library."
+    exit 1
+fi
+
+echo "xpm library compiled successfully!"
+echo "Add the following to your GHDL_ARGS in your Makefile for use with Cocotb:"
+echo "GHDL_ARGS += -P$XPM_LIB_WORK_DIR --std=08"

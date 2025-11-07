@@ -679,7 +679,8 @@ component xpm_fifo_axis
     PROG_FULL_THRESH         : integer  := 10;
     PROG_EMPTY_THRESH        : integer  := 10;
     SIM_ASSERT_CHK           : integer := 0    ;
-    CDC_SYNC_STAGES          : integer  := 2
+    CDC_SYNC_STAGES          : integer  := 2;
+    EN_SIM_ASSERT_ERR        : string := "warning"  -- Just a placeholder to match xilinx xpm library
   );
   port (
     s_aresetn                      : in  std_logic;

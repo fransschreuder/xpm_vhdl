@@ -35,8 +35,9 @@ entity xpm_fifo_axis is
     RD_DATA_COUNT_WIDTH      : integer  := 1;
     PROG_FULL_THRESH         : integer  := 10;
     PROG_EMPTY_THRESH        : integer  := 10;
-    SIM_ASSERT_CHK           : integer := 0    ;
-    CDC_SYNC_STAGES          : integer  := 2
+    SIM_ASSERT_CHK           : integer := 0;
+    CDC_SYNC_STAGES          : integer  := 2;
+    EN_SIM_ASSERT_ERR        : string := "warning"  -- Just a placeholder to match xilinx xpm library
   );
   port (
     s_aresetn                      : in  std_logic;
@@ -75,7 +76,7 @@ end xpm_fifo_axis;
 
 architecture rtl of xpm_fifo_axis is
 
-
+  constant KEEP_GENERIC : string := EN_SIM_ASSERT_ERR;
 
   function clog2(N : natural) return positive is
   begin

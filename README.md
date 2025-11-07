@@ -6,20 +6,34 @@ Xilinx has provided a very convenient library with Vivado called XPM. The librar
 
 The XPM VHDL library needs to be compiled with the VHDL-2008 standard.
 
-## Compilation (GHDL/Vunit)
+## Compilation
 
-In order to compile the library and run the testbench, a script was included.
+### Using GHDL and VUnit
 
-Dependencies:
+A helper script is provided to compile the library and run the testbench.
+
+**Dependencies**
+
 * GHDL
 * GtkWave
 * VUnit
-* Python3
+* Python 3
 
-```
+**Steps:**
+
+```bash
 cd script
 ./run_vunit.py
 ```
+
+### Manual Compilation
+
+To compile the library directly without VUnit, run:
+
+```bash
+./compile_ghdl_xpm_library.sh
+```
+
 
 ## Synthesis
 
@@ -32,4 +46,5 @@ This library was not created by Xilinx, but it should be functionally the same o
 This library has not completely been verified, if you find any bugs or limitations please report using the bug trackers.
 
 Known limitations:
- * ECC mode and bit error injection is not implemented
+ * ECC mode and bit error injection is not implemented.
+ * `EN_SIM_ASSERT_ERR` parameter for `xpm_fifo_axis` is not internally implemented.
