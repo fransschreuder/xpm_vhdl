@@ -332,77 +332,153 @@ begin
   end generate gen_nochange_a;
   
   
-  gen_readfirst_b : if(WRITE_MODE_B = 1) generate
-    process (clkb, rstb)
-    begin
-      if rstb = '1' then
-        doutb_i <= (others => '0');
-      elsif rising_edge(clkb) then
-        if enb = '1' then
-          doutb_i <= ram.Get_B(addrb);
-          ram.SetBE_B(addrb, dinb, web);
-        end if;
-      end if;
-    end process;
-  end generate gen_readfirst_b;
-  
-  gen_writefirst_b : if(WRITE_MODE_B = 0) generate
-    process (clkb, rstb)
-    begin
-      if rstb = '1' then
-        doutb_i <= (others => '0');
-      elsif rising_edge(clkb) then
-        if enb = '1' then
-          ram.SetBE_B(addrb, dinb, web);
-          doutb_i <= ram.Get_B(addrb);
-        end if;
-      end if;
-    end process;
-  end generate gen_writefirst_b;
-  
-  gen_nochange_b : if(WRITE_MODE_B = 2) generate
-    process (clkb, rstb)
-    begin
-      if rstb = '1' then
+  gen_common_clock: if(CLOCKING_MODE = 0) generate
+    gen_readfirst_b : if(WRITE_MODE_B = 1) generate
+      process (clka, rstb)
+      begin
+        if rstb = '1' then
           doutb_i <= (others => '0');
-      elsif rising_edge(clkb) then
-        if enb = '1' then
-          if(web = (web'range=> '0')) then
+        elsif rising_edge(clka) then
+          if enb = '1' then
             doutb_i <= ram.Get_B(addrb);
-          else
             ram.SetBE_B(addrb, dinb, web);
           end if;
         end if;
-      end if;
-    end process;
-  end generate gen_nochange_b;
-  g_latb_1: if READ_LATENCY_B < 2 generate
-    output_reg_b(READ_LATENCY_B) <= doutb_i;
-  end generate;
-  g_latb_2: if READ_LATENCY_B >= 2 generate
-    output_reg_b_proc: process(clkb, rstb)
-    begin
+      end process;
+    end generate gen_readfirst_b;
+
+    gen_writefirst_b : if(WRITE_MODE_B = 0) generate
+      process (clka, rstb)
+      begin
         if rstb = '1' then
-            for i in 2 to READ_LATENCY_B loop
-                if(READ_RESET_VALUE_B = "1") then
-                    output_reg_b(i) <= (others => '1');
-                else
-                    output_reg_b(i) <= (others => '0');
-                end if;
-            end loop;
-        elsif rising_edge(clkb) then
-            if regceb = '1' then
-                for i in 2 to READ_LATENCY_B loop
-                    if i = 2 then
-                        output_reg_b(i) <= doutb_i;
-                    else
-                        output_reg_b(i) <= output_reg_b(i-1);
-                    end if;
-                end loop;
-            end if;
+          doutb_i <= (others => '0');
+        elsif rising_edge(clka) then
+          if enb = '1' then
+            ram.SetBE_B(addrb, dinb, web);
+            doutb_i <= ram.Get_B(addrb);
+          end if;
         end if;
-    end process;
-  end generate;
+      end process;
+    end generate gen_writefirst_b;
+
+    gen_nochange_b : if(WRITE_MODE_B = 2) generate
+      process (clka, rstb)
+      begin
+        if rstb = '1' then
+            doutb_i <= (others => '0');
+        elsif rising_edge(clka) then
+          if enb = '1' then
+            if(web = (web'range=> '0')) then
+              doutb_i <= ram.Get_B(addrb);
+            else
+              ram.SetBE_B(addrb, dinb, web);
+            end if;
+          end if;
+        end if;
+      end process;
+    end generate gen_nochange_b;
+    g_latb_1: if READ_LATENCY_B < 2 generate
+      output_reg_b(READ_LATENCY_B) <= doutb_i;
+    end generate;
+    g_latb_2: if READ_LATENCY_B >= 2 generate
+      output_reg_b_proc: process(clka, rstb)
+      begin
+          if rstb = '1' then
+              for i in 2 to READ_LATENCY_B loop
+                  if(READ_RESET_VALUE_B = "1") then
+                      output_reg_b(i) <= (others => '1');
+                  else
+                      output_reg_b(i) <= (others => '0');
+                  end if;
+              end loop;
+          elsif rising_edge(clka) then
+              if regceb = '1' then
+                  for i in 2 to READ_LATENCY_B loop
+                      if i = 2 then
+                          output_reg_b(i) <= doutb_i;
+                      else
+                          output_reg_b(i) <= output_reg_b(i-1);
+                      end if;
+                  end loop;
+              end if;
+          end if;
+      end process;
+    end generate;
+  end generate gen_common_clock;
+
+  gen_indep_clock: if CLOCKING_MODE = 1 generate
+    gen_readfirst_b : if(WRITE_MODE_B = 1) generate
+      process (clkb, rstb)
+      begin
+        if rstb = '1' then
+          doutb_i <= (others => '0');
+        elsif rising_edge(clkb) then
+          if enb = '1' then
+            doutb_i <= ram.Get_B(addrb);
+            ram.SetBE_B(addrb, dinb, web);
+          end if;
+        end if;
+      end process;
+    end generate gen_readfirst_b;
+
+    gen_writefirst_b : if(WRITE_MODE_B = 0) generate
+      process (clkb, rstb)
+      begin
+        if rstb = '1' then
+          doutb_i <= (others => '0');
+        elsif rising_edge(clkb) then
+          if enb = '1' then
+            ram.SetBE_B(addrb, dinb, web);
+            doutb_i <= ram.Get_B(addrb);
+          end if;
+        end if;
+      end process;
+    end generate gen_writefirst_b;
+
+    gen_nochange_b : if(WRITE_MODE_B = 2) generate
+      process (clkb, rstb)
+      begin
+        if rstb = '1' then
+            doutb_i <= (others => '0');
+        elsif rising_edge(clkb) then
+          if enb = '1' then
+            if(web = (web'range=> '0')) then
+              doutb_i <= ram.Get_B(addrb);
+            else
+              ram.SetBE_B(addrb, dinb, web);
+            end if;
+          end if;
+        end if;
+      end process;
+    end generate gen_nochange_b;
+    g_latb_1: if READ_LATENCY_B < 2 generate
+      output_reg_b(READ_LATENCY_B) <= doutb_i;
+    end generate;
+    g_latb_2: if READ_LATENCY_B >= 2 generate
+      output_reg_b_proc: process(clkb, rstb)
+      begin
+          if rstb = '1' then
+              for i in 2 to READ_LATENCY_B loop
+                  if(READ_RESET_VALUE_B = "1") then
+                      output_reg_b(i) <= (others => '1');
+                  else
+                      output_reg_b(i) <= (others => '0');
+                  end if;
+              end loop;
+          elsif rising_edge(clkb) then
+              if regceb = '1' then
+                  for i in 2 to READ_LATENCY_B loop
+                      if i = 2 then
+                          output_reg_b(i) <= doutb_i;
+                      else
+                          output_reg_b(i) <= output_reg_b(i-1);
+                      end if;
+                  end loop;
+              end if;
+          end if;
+      end process;
+    end generate;
+  end generate gen_indep_clock;
     doutb <= output_reg_b(READ_LATENCY_B);
   
   g_lata_1: if READ_LATENCY_A < 2 generate
