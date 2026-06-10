@@ -166,6 +166,7 @@ architecture rtl of xpm_memory_base is
 
     f_file_open_check (file_name, status, fail_if_notfound);
 
+
     for I in 0 to mem_size-1 loop
       if not endfile(f_in) then
         readline (f_in, l);
@@ -331,8 +332,7 @@ begin
     end process;
   end generate gen_nochange_a;
   
-  
-  gen_common_clock: if(CLOCKING_MODE = 0) generate
+  g_common_clock: if CLOCKING_MODE = 0 generate -- use clka
     gen_readfirst_b : if(WRITE_MODE_B = 1) generate
       process (clka, rstb)
       begin
@@ -404,9 +404,7 @@ begin
           end if;
       end process;
     end generate;
-  end generate gen_common_clock;
-
-  gen_indep_clock: if CLOCKING_MODE = 1 generate
+  else generate --use clkb
     gen_readfirst_b : if(WRITE_MODE_B = 1) generate
       process (clkb, rstb)
       begin
@@ -478,7 +476,9 @@ begin
           end if;
       end process;
     end generate;
-  end generate gen_indep_clock;
+  end generate g_common_clock;
+  
+  
     doutb <= output_reg_b(READ_LATENCY_B);
   
   g_lata_1: if READ_LATENCY_A < 2 generate
