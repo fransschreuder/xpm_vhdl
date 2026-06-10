@@ -280,63 +280,68 @@ architecture rtl of xpm_memory_base is
   
   signal output_reg_a: slv_rwa_array;
   signal output_reg_b: slv_rwb_array;
-    
+
+  -- One read/modify/write "cycle" for both ports, shared by the common-clock and
+  -- independent-clock processes below. ev_a / ev_b indicate that this call is an
+  -- active (enabled, out-of-reset) rising edge for the respective port; the caller
+  -- computes them from its own clock(s). Both reads are sampled from the current
+  -- memory contents BEFORE either write is applied, so a simultaneous same-address
+  -- access on the opposite port reads the old contents (read-first), matching
+  -- block-RAM hardware (which has no cross-port write-to-read forwarding). Each port
+  -- still honors its own write mode with respect to its own write.
+  procedure mem_cycle(ev_a, ev_b : in boolean;
+                      signal q_a : out std_logic_vector(READ_DATA_WIDTH_A - 1 downto 0);
+                      signal q_b : out std_logic_vector(READ_DATA_WIDTH_B - 1 downto 0)) is
+    variable rd_a : std_logic_vector(READ_DATA_WIDTH_A - 1 downto 0);
+    variable rd_b : std_logic_vector(READ_DATA_WIDTH_B - 1 downto 0);
+  begin
+    -- Phase 1: sample both reads from the pre-write memory contents.
+    if ev_a then rd_a := ram.Get_A(addra); end if;
+    if ev_b then rd_b := ram.Get_B(addrb); end if;
+
+    -- Phase 2: apply both writes (a write with all byte-enables low is a no-op).
+    if ev_a then ram.SetBE_A(addra, dina, wea); end if;
+    if ev_b then ram.SetBE_B(addrb, dinb, web); end if;
+
+    -- Phase 3: drive each port's output register according to its write mode.
+    if rsta = '1' then
+      q_a <= (others => '0');
+    elsif ev_a then
+      if WRITE_MODE_A = 0 then                       -- write_first: own just-written data
+        q_a <= ram.Get_A(addra);
+      elsif WRITE_MODE_A = 1 then                    -- read_first: pre-write data
+        q_a <= rd_a;
+      elsif wea = (wea'range => '0') then            -- no_change: update only when not writing
+        q_a <= rd_a;
+      end if;
+    end if;
+
+    if rstb = '1' then
+      q_b <= (others => '0');
+    elsif ev_b then
+      if WRITE_MODE_B = 0 then
+        q_b <= ram.Get_B(addrb);
+      elsif WRITE_MODE_B = 1 then
+        q_b <= rd_b;
+      elsif web = (web'range => '0') then
+        q_b <= rd_b;
+      end if;
+    end if;
+  end procedure;
+
 begin
 
     -- "write_first"   0;
     -- "read_first"    1 ;
     -- "no_change"     2 ; 
 
-  -- Common-clock mode: both ports run on clka. To reproduce block-RAM
-  -- read-during-write behaviour deterministically we evaluate BOTH ports' reads
-  -- from the current memory contents BEFORE applying EITHER write, so a
-  -- simultaneous same-address access on the opposite port reads the old contents
-  -- (read-first) regardless of the order the simulator would otherwise evaluate
-  -- the two ports, matching hardware (which has no cross-port write-to-read
-  -- forwarding path). Each port still honours its own write mode w.r.t. its own
-  -- write. (The independent-clock block below is identical except port B is
-  -- clocked by clkb.)
+  -- Common-clock mode: both ports run on clka.
   g_common_clock: if(CLOCKING_MODE = 0) generate
     mem_proc : process (clka, rsta, rstb)
-      variable rd_a : std_logic_vector(READ_DATA_WIDTH_A - 1 downto 0);
-      variable rd_b : std_logic_vector(READ_DATA_WIDTH_B - 1 downto 0);
-      variable ev_a, ev_b : boolean;
     begin
-      ev_a := (rsta = '0') and rising_edge(clka) and (ena = '1');
-      ev_b := (rstb = '0') and rising_edge(clka) and (enb = '1');
-
-      -- Phase 1: sample both reads from the pre-write memory contents.
-      if ev_a then rd_a := ram.Get_A(addra); end if;
-      if ev_b then rd_b := ram.Get_B(addrb); end if;
-
-      -- Phase 2: apply both writes (a write with all byte-enables low is a no-op).
-      if ev_a then ram.SetBE_A(addra, dina, wea); end if;
-      if ev_b then ram.SetBE_B(addrb, dinb, web); end if;
-
-      -- Phase 3: drive each port's output register according to its write mode.
-      if rsta = '1' then
-        douta_i <= (others => '0');
-      elsif ev_a then
-        if WRITE_MODE_A = 0 then                       -- write_first: own just-written data
-          douta_i <= ram.Get_A(addra);
-        elsif WRITE_MODE_A = 1 then                    -- read_first: pre-write data
-          douta_i <= rd_a;
-        elsif wea = (wea'range => '0') then            -- no_change: update only when not writing
-          douta_i <= rd_a;
-        end if;
-      end if;
-
-      if rstb = '1' then
-        doutb_i <= (others => '0');
-      elsif ev_b then
-        if WRITE_MODE_B = 0 then
-          doutb_i <= ram.Get_B(addrb);
-        elsif WRITE_MODE_B = 1 then
-          doutb_i <= rd_b;
-        elsif web = (web'range => '0') then
-          doutb_i <= rd_b;
-        end if;
-      end if;
+      mem_cycle(ev_a => (rsta = '0') and rising_edge(clka) and (ena = '1'),
+                ev_b => (rstb = '0') and rising_edge(clka) and (enb = '1'),
+                q_a => douta_i, q_b => doutb_i);
     end process;
 
     g_latb_1: if READ_LATENCY_B < 2 generate
@@ -367,52 +372,13 @@ begin
       end process;
     end generate;
 
-  -- Independent-clock mode: identical to the common-clock block above, except
-  -- port B is clocked by clkb. Each port acts on its own clock edge; if the
-  -- two clocks happen to align, both reads are still taken before either write
-  -- (read-first), which is benign for the otherwise-undefined cross-clock
-  -- collision case.
+  -- Independent-clock mode: identical to above except port B clocked by clkb.
   else generate
     mem_proc : process (clka, clkb, rsta, rstb)
-      variable rd_a : std_logic_vector(READ_DATA_WIDTH_A - 1 downto 0);
-      variable rd_b : std_logic_vector(READ_DATA_WIDTH_B - 1 downto 0);
-      variable ev_a, ev_b : boolean;
     begin
-      ev_a := (rsta = '0') and rising_edge(clka) and (ena = '1');
-      ev_b := (rstb = '0') and rising_edge(clkb) and (enb = '1');
-
-      -- Phase 1: sample both reads from the pre-write memory contents.
-      if ev_a then rd_a := ram.Get_A(addra); end if;
-      if ev_b then rd_b := ram.Get_B(addrb); end if;
-
-      -- Phase 2: apply both writes (a write with all byte-enables low is a no-op).
-      if ev_a then ram.SetBE_A(addra, dina, wea); end if;
-      if ev_b then ram.SetBE_B(addrb, dinb, web); end if;
-
-      -- Phase 3: drive each port's output register according to its write mode.
-      if rsta = '1' then
-        douta_i <= (others => '0');
-      elsif ev_a then
-        if WRITE_MODE_A = 0 then                       -- write_first: own just-written data
-          douta_i <= ram.Get_A(addra);
-        elsif WRITE_MODE_A = 1 then                    -- read_first: pre-write data
-          douta_i <= rd_a;
-        elsif wea = (wea'range => '0') then            -- no_change: update only when not writing
-          douta_i <= rd_a;
-        end if;
-      end if;
-
-      if rstb = '1' then
-        doutb_i <= (others => '0');
-      elsif ev_b then
-        if WRITE_MODE_B = 0 then
-          doutb_i <= ram.Get_B(addrb);
-        elsif WRITE_MODE_B = 1 then
-          doutb_i <= rd_b;
-        elsif web = (web'range => '0') then
-          doutb_i <= rd_b;
-        end if;
-      end if;
+      mem_cycle(ev_a => (rsta = '0') and rising_edge(clka) and (ena = '1'),
+                ev_b => (rstb = '0') and rising_edge(clkb) and (enb = '1'),
+                q_a => douta_i, q_b => doutb_i);
     end process;
     g_latb_1: if READ_LATENCY_B < 2 generate
       output_reg_b(READ_LATENCY_B) <= doutb_i;
