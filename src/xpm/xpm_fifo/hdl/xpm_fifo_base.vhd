@@ -1655,7 +1655,7 @@ begin --architecture rtl
     begin
       if (rd_rst_i = '1' or invalid_state = '1') then
          rd_data_count_i   <= (others => '0');
-      else
+      elsif rising_edge(rd_clk) then
          rd_data_count_i  <= diff_wr_rd_pntr_rdc;
       end if;
     end process;
