@@ -13,6 +13,7 @@ xpm_lib.add_source_files(join(root, '../src/xpm/xpm_fifo/hdl', '*.vhd'))
 
 work_lib = prj.add_library('work_lib')
 work_lib.add_source_files(join(root, '../src/xpm/xpm_fifo/simulation', '*.vhd'))
+work_lib.add_source_files(join(root, '../src/xpm/xpm_memory/simulation', '*.vhd'))
 work_lib.set_sim_option("disable_ieee_warnings", True)
 work_lib.set_sim_option("ghdl.sim_flags", ["--max-stack-alloc=0"])
 
