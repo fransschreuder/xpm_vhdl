@@ -20,6 +20,8 @@ component xpm_memory_spram
     MEMORY_SIZE         : integer := 2048            ;
     MEMORY_PRIMITIVE    : string  := "auto"          ;
     ECC_MODE            : string  := "no_ecc"        ;
+    ECC_TYPE            : string  := "none"          ;
+    ECC_BIT_RANGE       : string  := "[7:0]"         ;
     MEMORY_INIT_FILE    : string  := "none"          ;
     MEMORY_INIT_PARAM   : string  := ""              ;
     USE_MEM_INIT        : integer := 1               ;
@@ -27,10 +29,12 @@ component xpm_memory_spram
     WAKEUP_TIME         : string  := "disable_sleep" ;
     AUTO_SLEEP_TIME     : integer := 0               ;
     MESSAGE_CONTROL     : integer := 0               ;
-    MEMORY_OPTIMIZATION : string  := "true" ;
+    MEMORY_OPTIMIZATION : string  := "true"          ;
     CASCADE_HEIGHT      : integer := 0               ;
     SIM_ASSERT_CHK      : integer := 0               ;
     WRITE_PROTECT       : integer := 1               ;
+    RAM_DECOMP          : string  := "auto"          ;
+    IGNORE_INIT_SYNTH   : integer := 0							 ;
 
     -- Port A module generics
     WRITE_DATA_WIDTH_A  : integer := 32           ;
@@ -74,7 +78,7 @@ component xpm_memory_sdpram
     CLOCKING_MODE           : string  := "common_clock" ;
     ECC_MODE                : string  := "no_ecc"       ;
     ECC_TYPE                : string  := "none"         ;
-    ECC_BIT_RANGE           : string  := "7:0"          ;
+    ECC_BIT_RANGE           : string  := "[7:0]"        ;
     MEMORY_INIT_FILE        : string  := "none"         ;
     MEMORY_INIT_PARAM       : string  := ""             ;
     USE_MEM_INIT            : integer := 1              ;
@@ -87,7 +91,8 @@ component xpm_memory_sdpram
     CASCADE_HEIGHT          : integer := 0               ;
     SIM_ASSERT_CHK          : integer := 0               ;
     WRITE_PROTECT           : integer := 1               ;
-
+    RAM_DECOMP              : string  := "auto"          ;
+    IGNORE_INIT_SYNTH       : integer := 0							 ;
     -- Port A module generics
     WRITE_DATA_WIDTH_A      : integer := 32 ;
     BYTE_WRITE_WIDTH_A      : integer := 32 ;
@@ -220,6 +225,8 @@ component xpm_memory_sprom
     MEMORY_SIZE             : integer := 2048           ;
     MEMORY_PRIMITIVE        : string  := "auto"         ;
     ECC_MODE                : string  := "no_ecc"       ;
+    ECC_TYPE                : string  := "none"         ;
+    ECC_BIT_RANGE           : string  := "[7:0]"        ;
     MEMORY_INIT_FILE        : string  := "none"         ;
     MEMORY_INIT_PARAM       : string  := ""             ;
     USE_MEM_INIT            : integer := 1              ;
@@ -230,6 +237,8 @@ component xpm_memory_sprom
     MEMORY_OPTIMIZATION     : string  := "true";
     CASCADE_HEIGHT          : integer := 0               ;
     SIM_ASSERT_CHK          : integer := 0               ;
+    RAM_DECOMP              : string  := "auto"          ;
+    IGNORE_INIT_SYNTH       : integer := 0							 ;
 
     -- Port A module generics
     READ_DATA_WIDTH_A       : integer := 32  ;
@@ -267,6 +276,8 @@ component xpm_memory_dprom
     MEMORY_PRIMITIVE        : string  := "auto"         ;
     CLOCKING_MODE           : string  := "common_clock" ;
     ECC_MODE                : string  := "no_ecc"       ;
+    ECC_TYPE                : string  := "none"         ;
+    ECC_BIT_RANGE           : string  := "[7:0]"        ;
     MEMORY_INIT_FILE        : string  := "none"         ;
     MEMORY_INIT_PARAM       : string  := ""             ;
     USE_MEM_INIT            : integer := 1              ;
@@ -277,6 +288,8 @@ component xpm_memory_dprom
     MEMORY_OPTIMIZATION     : string  := "true";
     CASCADE_HEIGHT          : integer := 0               ;
     SIM_ASSERT_CHK          : integer := 0               ;
+    RAM_DECOMP              : string  := "auto"          ;
+    IGNORE_INIT_SYNTH       : integer := 0							 ;
 
     -- Port A module generics
     READ_DATA_WIDTH_A       : integer := 32  ;
@@ -339,6 +352,7 @@ component xpm_memory_dpdistram
     USE_EMBEDDED_CONSTRAINT : integer := 0              ;
     MEMORY_OPTIMIZATION     : string  := "true";
     SIM_ASSERT_CHK          : integer := 0               ;
+    IGNORE_INIT_SYNTH       : integer := 0							 ;
 
     -- Port A module generics
     WRITE_DATA_WIDTH_A : integer := 32  ;
@@ -570,7 +584,8 @@ component xpm_fifo_async
     PROG_EMPTY_THRESH        : integer  := 10;
     DOUT_RESET_VALUE         : string   := "0";
     ECC_MODE                 : string   :="no_ecc";
-    SIM_ASSERT_CHK           : integer := 0    ;
+    SIM_ASSERT_CHK           : integer  := 0    ;
+    EN_SIM_ASSERT_ERR        : string   := "warning"    ;
     WAKEUP_TIME              : integer  := 0
   );
   port (
@@ -626,6 +641,7 @@ component xpm_fifo_sync
     DOUT_RESET_VALUE         : string   := "0";
     ECC_MODE                 : string   :="no_ecc";
     SIM_ASSERT_CHK           : integer := 0    ;
+    EN_SIM_ASSERT_ERR        : string   := "warning"    ;
     WAKEUP_TIME              : integer  := 0
   );
   port (
@@ -678,9 +694,9 @@ component xpm_fifo_axis
     RD_DATA_COUNT_WIDTH      : integer  := 1;
     PROG_FULL_THRESH         : integer  := 10;
     PROG_EMPTY_THRESH        : integer  := 10;
-    SIM_ASSERT_CHK           : integer := 0    ;
-    CDC_SYNC_STAGES          : integer  := 2;
-    EN_SIM_ASSERT_ERR        : string := "warning"  -- Just a placeholder to match xilinx xpm library
+    SIM_ASSERT_CHK           : integer  := 0    ;
+    EN_SIM_ASSERT_ERR        : string   := "warning"    ;
+    CDC_SYNC_STAGES          : integer  := 2
   );
   port (
     s_aresetn                      : in  std_logic;
@@ -734,6 +750,7 @@ component xpm_fifo_axif
     AXI_RUSER_WIDTH           : integer  := 1;
     CLOCKING_MODE             : string   := "common";
     SIM_ASSERT_CHK            : integer := 0    ;
+    EN_SIM_ASSERT_ERR         : string   := "warning"    ;
     CDC_SYNC_STAGES           : integer  := 2;
     EN_RESET_SYNCHRONIZER     : integer  := 0;
     CASCADE_HEIGHT            : integer  := 0;
@@ -880,6 +897,7 @@ component xpm_fifo_axil
     AXI_DATA_WIDTH            : integer  := 32;
     CLOCKING_MODE             : string   := "common";
     SIM_ASSERT_CHK            : integer := 0    ;
+    EN_SIM_ASSERT_ERR         : string   := "warning"    ;
     CDC_SYNC_STAGES           : integer  := 2;
     EN_RESET_SYNCHRONIZER     : integer  := 0;
     CASCADE_HEIGHT            : integer  := 0;
@@ -967,5 +985,199 @@ component xpm_fifo_axil
     );
 end component;
 
+----- component xpm_nmu_mm -----
+component xpm_nmu_mm
+  generic (
+
+    NOC_FABRIC           : string    := "VNOC";        -- VNOC/BLI
+    DATA_WIDTH           : integer   := 512;           -- 32/64/128/256/512
+    ADDR_WIDTH           : integer   := 64;            -- 12 to 64
+    ID_WIDTH             : integer   := 16;            -- 1 to 16
+    AUSER_WIDTH          : integer   := 16;            -- 16 for VNOC with parity disabled, 18 for VNOC with parity enabled 
+    DUSER_WIDTH          : integer   := 128;           -- 2*DATA_WIDTH/8 for parity enablement with VNOC, 0 for VNOC with parity disabled cases
+    ENABLE_USR_INTERRUPT : string    := "false";       -- false/true
+    SIDEBAND_PINS        : string    := "false"        -- false/true/addr/data
+    
+  );
+  port (
+
+    s_axi_aclk           : in  std_logic;
+
+    s_axi_awid           : in  std_logic_vector(ID_WIDTH-1 downto 0);
+    s_axi_awaddr         : in  std_logic_vector(ADDR_WIDTH-1 downto 0);
+    s_axi_awlen          : in  std_logic_vector(7 downto 0);
+    s_axi_awsize         : in  std_logic_vector(2 downto 0);
+    s_axi_awburst        : in  std_logic_vector(1 downto 0);
+    s_axi_awlock         : in  std_logic_vector(0 downto 0);
+    s_axi_awcache        : in  std_logic_vector(3 downto 0);
+    s_axi_awprot         : in  std_logic_vector(2 downto 0);
+    s_axi_awregion       : in  std_logic_vector(3 downto 0);
+    s_axi_awqos          : in  std_logic_vector(3 downto 0);
+    s_axi_awuser         : in  std_logic_vector(AUSER_WIDTH-1 downto 0);
+    s_axi_awvalid        : in  std_logic;
+    s_axi_awready        : out std_logic;
+
+    s_axi_wid            : in  std_logic_vector(ID_WIDTH-1 downto 0);
+    s_axi_wdata          : in  std_logic_vector(DATA_WIDTH-1 downto 0);
+    s_axi_wstrb          : in  std_logic_vector(DATA_WIDTH/8-1 downto 0);
+    s_axi_wlast          : in  std_logic;
+    s_axi_wuser          : in  std_logic_vector(DUSER_WIDTH-1 downto 0);
+    s_axi_wvalid         : in  std_logic;
+    s_axi_wready         : out std_logic;
+                          
+    s_axi_bid            : out std_logic_vector(ID_WIDTH-1 downto 0);
+    s_axi_bresp          : out std_logic_vector(1 downto 0);
+    s_axi_buser          : out std_logic_vector(15 downto 0);
+    s_axi_bvalid         : out std_logic;
+    s_axi_bready         : in  std_logic;
+
+    s_axi_arid           : in  std_logic_vector(ID_WIDTH-1 downto 0);
+    s_axi_araddr         : in  std_logic_vector(ADDR_WIDTH-1 downto 0);
+    s_axi_arlen          : in  std_logic_vector(7 downto 0);
+    s_axi_arsize         : in  std_logic_vector(2 downto 0);
+    s_axi_arburst        : in  std_logic_vector(1 downto 0);
+    s_axi_arlock         : in  std_logic_vector(0 downto 0);
+    s_axi_arcache        : in  std_logic_vector(3 downto 0);
+    s_axi_arprot         : in  std_logic_vector(2 downto 0);
+    s_axi_arregion       : in  std_logic_vector(3 downto 0);
+    s_axi_arqos          : in  std_logic_vector(3 downto 0);
+    s_axi_aruser         : in  std_logic_vector(AUSER_WIDTH-1 downto 0);
+    s_axi_arvalid        : in  std_logic;
+    s_axi_arready        : out std_logic;
+
+    s_axi_rid            : out std_logic_vector(ID_WIDTH-1 downto 0);
+    s_axi_rdata          : out std_logic_vector(DATA_WIDTH-1 downto 0);
+    s_axi_rresp          : out std_logic_vector(1 downto 0);
+    s_axi_rlast          : out std_logic;
+    s_axi_ruser          : out std_logic_vector(DUSER_WIDTH-1 downto 0);
+    s_axi_rvalid         : out std_logic;
+    s_axi_rready         : in  std_logic;
+
+    nmu_usr_interrupt_in : in std_logic_vector(3 downto 0)                
+  );
+end component;
+
+
+----- component xpm_nsu_mm -----
+component xpm_nsu_mm
+  generic (
+
+    NOC_FABRIC           : string    := "VNOC";        -- VNOC/BLI
+    DATA_WIDTH           : integer   := 512;           -- 32/64/128/256/512
+    ADDR_WIDTH           : integer   := 64;            -- 12 to 64
+    ID_WIDTH             : integer   := 2;             -- 1 to 16
+    AUSER_WIDTH          : integer   := 16;            -- 16 for VNOC with parity disabled, 18 for VNOC with parity enabled 
+    DUSER_WIDTH          : integer   := 128;           -- 2*DATA_WIDTH/8 for parity enablement with VNOC, 0 for VNOC with parity disabled cases
+    ENABLE_USR_INTERRUPT : string    := "false";       -- false/true
+    SIDEBAND_PINS        : string    := "false"        -- false/true/addr/data
+  );
+  port (
+
+    m_axi_aclk           : in  std_logic;
+
+    m_axi_awid           : out std_logic_vector(ID_WIDTH-1 downto 0);
+    m_axi_awaddr         : out std_logic_vector(ADDR_WIDTH-1 downto 0);
+    m_axi_awlen          : out std_logic_vector(7 downto 0);
+    m_axi_awsize         : out std_logic_vector(2 downto 0);
+    m_axi_awburst        : out std_logic_vector(1 downto 0);
+    m_axi_awlock         : out std_logic_vector(0 downto 0);
+    m_axi_awcache        : out std_logic_vector(3 downto 0);
+    m_axi_awprot         : out std_logic_vector(2 downto 0);
+    m_axi_awregion       : out std_logic_vector(3 downto 0);
+    m_axi_awqos          : out std_logic_vector(3 downto 0);
+    m_axi_awuser         : out std_logic_vector(AUSER_WIDTH-1 downto 0);
+    m_axi_awvalid        : out std_logic;
+    m_axi_awready        : in  std_logic;
+
+    m_axi_wdata          : out std_logic_vector(DATA_WIDTH-1 downto 0);
+    m_axi_wstrb          : out std_logic_vector(DATA_WIDTH/8-1 downto 0);
+    m_axi_wlast          : out std_logic;
+    m_axi_wuser          : out std_logic_vector(DUSER_WIDTH-1 downto 0);
+    m_axi_wvalid         : out std_logic;
+    m_axi_wready         : in  std_logic;
+                          
+    m_axi_bid            : in  std_logic_vector(ID_WIDTH-1 downto 0);
+    m_axi_bresp          : in  std_logic_vector(1 downto 0);
+    m_axi_buser          : in  std_logic_vector(15 downto 0);
+    m_axi_bvalid         : in  std_logic;
+    m_axi_bready         : out std_logic;
+
+    m_axi_arid           : out std_logic_vector(ID_WIDTH-1 downto 0);
+    m_axi_araddr         : out std_logic_vector(ADDR_WIDTH-1 downto 0);
+    m_axi_arlen          : out std_logic_vector(7 downto 0);
+    m_axi_arsize         : out std_logic_vector(2 downto 0);
+    m_axi_arburst        : out std_logic_vector(1 downto 0);
+    m_axi_arlock         : out std_logic_vector(0 downto 0);
+    m_axi_arcache        : out std_logic_vector(3 downto 0);
+    m_axi_arprot         : out std_logic_vector(2 downto 0);
+    m_axi_arregion       : out std_logic_vector(3 downto 0);
+    m_axi_arqos          : out std_logic_vector(3 downto 0);
+    m_axi_aruser         : out std_logic_vector(AUSER_WIDTH-1 downto 0);
+    m_axi_arvalid        : out std_logic;
+    m_axi_arready        : in  std_logic;
+
+    m_axi_rid            : in  std_logic_vector(ID_WIDTH-1 downto 0);
+    m_axi_rdata          : in  std_logic_vector(DATA_WIDTH-1 downto 0);
+    m_axi_rresp          : in  std_logic_vector(1 downto 0);
+    m_axi_rlast          : in  std_logic;
+    m_axi_ruser          : in  std_logic_vector(DUSER_WIDTH-1 downto 0);
+    m_axi_rvalid         : in  std_logic;
+    m_axi_rready         : out std_logic;
+
+    m_axi_out            : out std_logic;
+
+    nsu_usr_interrupt_in : in std_logic_vector(3 downto 0)                
+  );
+end component;
+
+----- component xpm_nmu_strm -----
+component xpm_nmu_strm
+  generic (
+
+    NOC_FABRIC           : string  := "VNOC";        -- VNOC/BLI
+    DATA_WIDTH           : integer := 512;           -- 32/64/128/256/512
+    DST_ID_WIDTH         : integer := 4;             -- 1 to 4
+    ID_WIDTH             : integer := 16             -- 1 to 16
+
+  );
+  port (
+
+    s_axis_aclk          : in  std_logic;
+
+    s_axis_tid           : in  std_logic_vector(ID_WIDTH-1 downto 0);
+    s_axis_tdata         : in  std_logic_vector(DATA_WIDTH-1 downto 0);
+    s_axis_tkeep         : in  std_logic_vector(DATA_WIDTH/8-1 downto 0);
+    s_axis_tlast         : in  std_logic;
+    s_axis_tvalid        : in  std_logic;
+    s_axis_tready        : out std_logic;
+    s_axis_tdest         : in  std_logic_vector(DST_ID_WIDTH-1 downto 0);
+
+    dst_id_err           : out std_logic                     
+  );
+end component;
+
+----- component xpm_nsu_strm -----
+component xpm_nsu_strm
+  generic (
+
+    NOC_FABRIC           : string  := "VNOC";        -- VNOC/BLI
+    DATA_WIDTH           : integer := 512;           -- 32/64/128/256/512
+    DST_ID_WIDTH         : integer := 4;             -- 0 to 4
+    ID_WIDTH             : integer := 16             -- always 2
+
+  );
+  port (
+
+    m_axis_aclk          : in  std_logic;
+
+    m_axis_tid           : out std_logic_vector(ID_WIDTH-1 downto 0);
+    m_axis_tdata         : out std_logic_vector(DATA_WIDTH-1 downto 0);
+    m_axis_tkeep         : out std_logic_vector(DATA_WIDTH/8-1 downto 0);
+    m_axis_tlast         : out std_logic;
+    m_axis_tvalid        : out std_logic;
+    m_axis_tdest         : out std_logic_vector(DST_ID_WIDTH-1 downto 0);
+    m_axis_tready        : in  std_logic
+  );
+end component;
 
 end VCOMPONENTS;
