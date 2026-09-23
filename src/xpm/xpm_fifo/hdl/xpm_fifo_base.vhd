@@ -317,6 +317,30 @@ architecture rtl of xpm_fifo_base is
       return 0;
     end if;
   end function;
+
+  function compare_clean (a : std_logic_vector; b : std_logic_vector) return boolean is
+    variable a_clean : std_logic_vector(a'range);
+    variable b_clean : std_logic_vector(b'range);
+  begin
+    if a'left /= b'left then
+      return false;
+    else
+      for i in a'range loop
+        if a(i) = '1' then
+          a_clean(i) := '1';
+        else
+          a_clean(i) := '0';
+        end if;
+
+        if b(i) = '1' then
+          b_clean(i) := '1';
+        else
+          b_clean(i) := '0';
+        end if;
+      end loop;
+      return a_clean = b_clean;
+    end if;
+  end function compare_clean;
   
   --signal wr_en_i : std_logic;
   signal wr_rst_i : std_logic := '0';
@@ -839,15 +863,15 @@ begin --architecture rtl
 
   gen_pf_ic_rc: if (COMMON_CLOCK = 0 or RELATED_CLOCKS = 1) generate
   
-     going_empty     <= '1' when ((wr_pntr_rd_adj = rd_pntr_plus1) and ram_rd_en_i = '1') else '0';
-     leaving_empty   <= '1' when ((wr_pntr_rd_adj = rd_pntr)) else '0';
-     going_aempty    <= '1' when ((wr_pntr_rd_adj = rd_pntr_plus2) and ram_rd_en_i = '1') else '0';
-     leaving_aempty  <= '1' when ((wr_pntr_rd_adj = rd_pntr_plus1)) else '0';
+     going_empty     <= '1' when compare_clean(wr_pntr_rd_adj, rd_pntr_plus1) and ram_rd_en_i = '1' else '0';
+     leaving_empty   <= '1' when compare_clean(wr_pntr_rd_adj, rd_pntr) else '0';
+     going_aempty    <= '1' when compare_clean(wr_pntr_rd_adj, rd_pntr_plus2) and ram_rd_en_i = '1' else '0';
+     leaving_aempty  <= '1' when compare_clean(wr_pntr_rd_adj, rd_pntr_plus1) else '0';
   
-     going_full      <= '1' when ((rd_pntr_wr_adj = wr_pntr_plus2) and ram_wr_en_i = '1') else '0';
-     leaving_full    <= '1' when ((rd_pntr_wr_adj = wr_pntr_plus1)) else '0';
-     going_afull     <= '1' when ((rd_pntr_wr_adj = wr_pntr_plus3) and ram_wr_en_i = '1') else '0';
-     leaving_afull   <= '1' when ((rd_pntr_wr_adj = wr_pntr_plus2)) else '0';
+     going_full      <= '1' when compare_clean(rd_pntr_wr_adj, wr_pntr_plus2) and ram_wr_en_i = '1' else '0';
+     leaving_full    <= '1' when compare_clean(rd_pntr_wr_adj, wr_pntr_plus1) else '0';
+     going_afull     <= '1' when compare_clean(rd_pntr_wr_adj, wr_pntr_plus3) and ram_wr_en_i = '1' else '0';
+     leaving_afull   <= '1' when compare_clean(rd_pntr_wr_adj, wr_pntr_plus2) else '0';
   
     -- Empty flag generation
     process(rd_clk, rd_rst_i)
